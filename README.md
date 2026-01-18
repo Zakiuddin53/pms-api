@@ -68,30 +68,30 @@ Example: A user can be:
 - RBAC: SUPER_ADMIN / PROPERTY_ADMIN / STAFF
 - Property creation APIs
 
-### ✅ Phase 1 — Inventory + Pricing
+### Phase 1 — Inventory + Pricing
 - Room Types CRUD
 - Rooms CRUD
 - Room blocks (maintenance/unavailable)
 - Rate plans & rates
 
-### ✅ Phase 2 — Booking Engine Core
+### Phase 2 — Booking Engine Core
 - Availability API
 - Booking HOLD (temporary reservation)
 - Booking CONFIRM
 - Booking retrieval APIs
 
-### ✅ Phase 3 — Payments
+### Phase 3 — Payments
 - Payment order
 - Webhook confirmation
 - Auto booking confirmation after payment
 
-### ✅ Phase 4 — Front Desk
+### Phase 4 — Front Desk
 - Walk-in bookings
 - Check-in/check-out
 - Guest management
 - Assign room during check-in
 
-### ✅ Phase 5 — Reports & Stats
+### Phase 5 — Reports & Stats
 - Occupancy
 - Revenue
 - Arrivals/Departures
@@ -118,7 +118,43 @@ Staff can:
 
 ---
 
-## Folder / Module Structure
+## Database Design (Key Tables)
 
-Suggested NestJS structure:
+### users (global)
+Stores platform users.
+
+### properties
+Stores hotels/properties.
+
+### user_property_roles (membership table)
+Connects users to properties with roles.
+
+Example:
+- userId=1 → propertyId=10 → PROPERTY_ADMIN
+- userId=1 → propertyId=12 → STAFF
+
+✅ Every business record includes `property_id`:
+- bookings
+- rooms
+- room_types
+- guests
+- rates
+- payments
+
+---
+
+## Environment Variables
+
+Create `.env`:
+
+PORT=4000
+
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DB_NAME"
+
+JWT_SECRET="your_jwt_secret"
+JWT_EXPIRES_IN="15m"
+
+REFRESH_JWT_SECRET="your_refresh_secret"
+REFRESH_JWT_EXPIRES_IN="7d"
+
 
