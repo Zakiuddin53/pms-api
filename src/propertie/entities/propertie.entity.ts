@@ -13,10 +13,7 @@ export class Propertie {
   address: string;
 
   @Column()
-  timezone: string;
-
-  @Column()
-  currency: string;
+  pinCode: string;
 
   @CreateDateColumn()
   createdAt: Date;

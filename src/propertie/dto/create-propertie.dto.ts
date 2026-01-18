@@ -1,15 +1,16 @@
-import { IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreatePropertieDto {
   @IsString()
-  name!: string;
+  @IsNotEmpty()
+  name: string;
 
   @IsString()
-  address!: string;
+  @IsNotEmpty()
+  address: string;
 
-  @IsString()
-  timezone!: string;
+  @IsNumber()
+  @IsNotEmpty()
+  pinCode: string;
 
-  @IsString()
-  currency!: string;
 }

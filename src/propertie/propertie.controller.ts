@@ -8,6 +8,7 @@ import { PropertieService } from './propertie.service';
 import { CreatePropertieDto } from './dto/create-propertie.dto';
 import { CreatePropertyAdminDto } from './dto/create-property-admin.dto';
 import { CreatePropertyStaffDto } from './dto/create-property-staff.dto';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('properties')
 export class PropertieController {
@@ -16,6 +17,7 @@ export class PropertieController {
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermission(Permissions.PROPERTIES_CREATE)
   @Post()
+  @ApiOperation({ summary: 'create' })
   async create(@Body() createPropertieDto: CreatePropertieDto) {
     return this.propertieService.create(createPropertieDto);
   }
@@ -23,6 +25,7 @@ export class PropertieController {
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermission(Permissions.PROPERTIES_LIST)
   @Get()
+  @ApiOperation({ summary: 'get all' })
   async findAll() {
     return this.propertieService.findAll();
   }
@@ -30,6 +33,7 @@ export class PropertieController {
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   @RequirePermission(Permissions.PROPERTY_ADMINS_CREATE)
   @Post(':propertyId/admins')
+  @ApiOperation({ summary: 'add admin to a property' })
   async createPropertyAdmin(
     @Param('propertyId') propertyId: string,
     @Body() body: CreatePropertyAdminDto,
@@ -39,6 +43,7 @@ export class PropertieController {
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   @RequirePermission(Permissions.PROPERTY_STAFF_CREATE)
+  @ApiOperation({ summary: 'add staff to a property' })
   @Post(':propertyId/staff')
   async createStaff(
     @Param('propertyId') propertyId: string,
@@ -49,6 +54,7 @@ export class PropertieController {
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   @RequirePermission(Permissions.PROPERTY_USERS_READ)
+  @ApiOperation({ summary: 'property users' })
   @Get(':propertyId/users')
   async listUsers(@Param('propertyId') propertyId: string) {
     return this.propertieService.listPropertyUsers(Number(propertyId));
