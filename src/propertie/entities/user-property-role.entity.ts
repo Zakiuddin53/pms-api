@@ -6,8 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Propertie } from '../propertie/entities/propertie.entity';
-import { User } from '../users/user.entity';
+import { Propertie } from './propertie.entity';
+import { User } from '../../users/user.entity';
 import { PropertyRole } from 'src/common/enums/property-role.enum';
 
 @Entity()
@@ -42,5 +42,5 @@ export class UserPropertyRole {
     nullable: true,
   })
   @JoinColumn()
-  property?: Propertie | null;
+  property?: Propertie;
 }

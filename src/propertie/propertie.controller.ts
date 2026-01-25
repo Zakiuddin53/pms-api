@@ -1,4 +1,6 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Paginate } from 'nestjs-paginate';
+import type { PaginateQuery } from 'nestjs-paginate';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
@@ -26,8 +28,8 @@ export class PropertieController {
   @RequirePermission(Permissions.PROPERTIES_LIST)
   @Get()
   @ApiOperation({ summary: 'get all' })
-  async findAll() {
-    return this.propertieService.findAll();
+  async findAll(@Paginate() query: PaginateQuery) {
+    return this.propertieService.list(query);
   }
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)

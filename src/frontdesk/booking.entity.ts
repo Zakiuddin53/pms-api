@@ -8,15 +8,15 @@ import {
 
 @Entity('bookings')
 export class Booking {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  @PrimaryGeneratedColumn("increment")
+  id: number;
 
-  @Column({ name: 'property_id', type: 'int' })
-  propertyId!: number;
+  @Column()
+  propertyId: number;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
-  createdAt!: Date;
+  @CreateDateColumn()
+  createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
-  updatedAt!: Date;
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

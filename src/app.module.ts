@@ -6,6 +6,8 @@ import { AuthModule } from './auth/auth.module';
 import { FrontdeskModule } from './frontdesk/frontdesk.module';
 import { PropertieModule } from './propertie/propertie.module';
 import { ConfigModule } from '@nestjs/config';
+import { InventoryModule } from './inventory/inventory.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { ConfigModule } from '@nestjs/config';
     AuthModule,
     FrontdeskModule,
     PropertieModule,
+    InventoryModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

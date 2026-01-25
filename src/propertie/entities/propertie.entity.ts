@@ -1,7 +1,8 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { UserPropertyRole } from '../../user-property-roles/user-property-role.entity';
+import { RoomType } from '../../inventory/room-types/room-type.entity';
+import { UserPropertyRole } from './user-property-role.entity';
 
-@Entity('properties')
+@Entity()
 export class Propertie {
   @PrimaryGeneratedColumn('increment')
   id: number;
@@ -20,4 +21,7 @@ export class Propertie {
 
   @OneToMany(() => UserPropertyRole, (membership) => membership.property)
   memberships: UserPropertyRole[];
+
+  @OneToMany(() => RoomType, (roomType) => roomType.property)
+  roomTypes: RoomType[];
 }

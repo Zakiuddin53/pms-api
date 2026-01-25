@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { UserPropertyRole } from '../user-property-roles/user-property-role.entity';
+import { UserPropertyRole } from '../propertie/entities/user-property-role.entity';
 
-@Entity('users')
+@Entity()
 export class User {
   @PrimaryGeneratedColumn('increment')
   id: number;

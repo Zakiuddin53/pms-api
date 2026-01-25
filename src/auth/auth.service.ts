@@ -7,7 +7,7 @@ import { GlobalRole } from '../common/enums/global-role.enum';
 import { PropertyRole } from '../common/enums/property-role.enum';
 import type { JwtPayload } from '../common/types/auth.types';
 import { User } from '../users/user.entity';
-import { UserPropertyRole } from '../user-property-roles/user-property-role.entity';
+import { UserPropertyRole } from '../propertie/entities/user-property-role.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterSuperAdminDto } from './dto/register-super-admin.dto';
 

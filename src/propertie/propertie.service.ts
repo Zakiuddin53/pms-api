@@ -1,14 +1,16 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import argon2 from 'argon2';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PaginateQuery, paginate } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
 import { PropertyRole } from '../common/enums/property-role.enum';
 import { User } from '../users/user.entity';
-import { UserPropertyRole } from '../user-property-roles/user-property-role.entity';
+import { UserPropertyRole } from './entities/user-property-role.entity';
 import { CreatePropertieDto } from './dto/create-propertie.dto';
 import { CreatePropertyAdminDto } from './dto/create-property-admin.dto';
 import { CreatePropertyStaffDto } from './dto/create-property-staff.dto';
 import { Propertie } from './entities/propertie.entity';
+import { propertiesPaginationConfig } from './propertie.pagination';
 
 @Injectable()
 export class PropertieService {
@@ -26,8 +28,11 @@ export class PropertieService {
     return this.properties.save(property);
   }
 
-  async findAll() {
-    return this.properties.find({ order: { name: 'ASC' } });
+  async list(query: PaginateQuery) {
+    return paginate(query, this.properties, {
+      ...propertiesPaginationConfig,
+      defaultSortBy: [['name', 'ASC']],
+    });
   }
 
   async createPropertyAdmin(propertyId: number, dto: CreatePropertyAdminDto) {
