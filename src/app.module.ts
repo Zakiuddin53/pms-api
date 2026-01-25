@@ -7,7 +7,6 @@ import { FrontdeskModule } from './frontdesk/frontdesk.module';
 import { PropertieModule } from './propertie/propertie.module';
 import { ConfigModule } from '@nestjs/config';
 import { InventoryModule } from './inventory/inventory.module';
-import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -30,7 +29,6 @@ import { UsersModule } from './users/users.module';
     FrontdeskModule,
     PropertieModule,
     InventoryModule,
-    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
