@@ -1,19 +1,22 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('rates')
+@Entity()
 export class Rate {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column({ name: 'property_id', type: 'int' })
+  @Column()
   propertyId: number;
 
-  @Column({ name: 'room_type_id', type: 'int' })
+  @Column()
   roomTypeId: number;
 
-  @Column({ type: 'date' })
-  date: string;
+  @Column()
+  startDate: string;
 
-  @Column({ type: 'numeric' })
+  @Column()
+  endDate: string;
+
+  @Column()
   price: number;
 }

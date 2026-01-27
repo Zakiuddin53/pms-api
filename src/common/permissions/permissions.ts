@@ -22,6 +22,10 @@ export const Permissions = {
   RATES_READ: 'rates:read',
   RATES_UPDATE: 'rates:update',
   RATES_DELETE: 'rates:delete',
+  AVAILABILITY_READ: 'availability:read',
+  BOOKINGS_HOLD: 'bookings:hold',
+  BOOKINGS_CONFIRM: 'bookings:confirm',
+  BOOKINGS_READ: 'bookings:read',
 } as const;
 
 export type Permission = (typeof Permissions)[keyof typeof Permissions];
@@ -49,6 +53,10 @@ export const RolePermissions: Record<PropertyRole, Permission[]> = {
     Permissions.RATES_READ,
     Permissions.RATES_UPDATE,
     Permissions.RATES_DELETE,
+    Permissions.AVAILABILITY_READ,
+    Permissions.BOOKINGS_HOLD,
+    Permissions.BOOKINGS_CONFIRM,
+    Permissions.BOOKINGS_READ,
   ],
   [PropertyRole.PROPERTY_ADMIN]: [
     Permissions.PROPERTY_STAFF_CREATE,
@@ -69,11 +77,18 @@ export const RolePermissions: Record<PropertyRole, Permission[]> = {
     Permissions.RATES_READ,
     Permissions.RATES_UPDATE,
     Permissions.RATES_DELETE,
+    Permissions.AVAILABILITY_READ,
+    Permissions.BOOKINGS_HOLD,
+    Permissions.BOOKINGS_CONFIRM,
+    Permissions.BOOKINGS_READ,
   ],
   [PropertyRole.STAFF]: [
     Permissions.ROOM_TYPES_READ,
     Permissions.ROOMS_READ,
     Permissions.ROOM_BLOCKS_READ,
     Permissions.RATES_READ,
+    Permissions.AVAILABILITY_READ,
+    Permissions.BOOKINGS_HOLD,
+    Permissions.BOOKINGS_READ,
   ],
 };

@@ -9,6 +9,7 @@ import { Permissions } from '../../common/permissions/permissions';
 import { CreateRoomTypeDto } from './dto/create-room-type.dto';
 import { UpdateRoomTypeDto } from './dto/update-room-type.dto';
 import { RoomTypesService } from './room-types.service';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('properties/:propertyId/room-types')
 export class RoomTypesController {
@@ -16,6 +17,7 @@ export class RoomTypesController {
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   @RequirePermission(Permissions.ROOM_TYPES_CREATE)
+  @ApiOperation({ summary: 'create room type' })
   @Post()
   async create(
     @Param('propertyId') propertyId: string,

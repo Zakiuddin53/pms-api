@@ -14,7 +14,7 @@ export class Propertie {
   address: string;
 
   @Column()
-  pinCode: string;
+  pinCode: number;
 
   @CreateDateColumn()
   createdAt: Date;

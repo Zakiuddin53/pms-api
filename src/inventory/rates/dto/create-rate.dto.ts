@@ -6,7 +6,10 @@ export class CreateRateDto {
   roomTypeId!: number;
 
   @IsDateString()
-  date!: string;
+  startDate!: string;
+
+  @IsDateString()
+  endDate!: string;
 
   @IsNumber()
   @Min(0)

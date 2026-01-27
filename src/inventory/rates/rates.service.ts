@@ -27,7 +27,8 @@ export class RatesService {
     const rate = this.rates.create({
       propertyId,
       roomTypeId: dto.roomTypeId,
-      date: dto.date,
+      startDate: dto.startDate,
+      endDate: dto.endDate,
       price: dto.price,
     });
     return this.rates.save(rate);
@@ -35,10 +36,11 @@ export class RatesService {
 
   async list(propertyId: number, query: PaginateQuery) {
     return paginate(query, this.rates, {
-      sortableColumns: ['date', 'price', 'roomTypeId'],
+      sortableColumns: ['startDate', 'endDate', 'price', 'roomTypeId'],
       filterableColumns: {
         roomTypeId: [FilterOperator.EQ],
-        date: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.EQ],
+        startDate: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.EQ],
+        endDate: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.EQ],
         price: [FilterOperator.GTE, FilterOperator.LTE],
       },
       where: { propertyId },
@@ -67,7 +69,8 @@ export class RatesService {
 
     const updated = this.rates.merge(rate, {
       roomTypeId: dto.roomTypeId ?? rate.roomTypeId,
-      date: dto.date ?? rate.date,
+      startDate: dto.startDate ?? rate.startDate,
+      endDate: dto.endDate ?? rate.endDate,
       price: dto.price ?? rate.price,
     });
     return this.rates.save(updated);
