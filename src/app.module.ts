@@ -11,7 +11,12 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: process.env.ENV_FILE_PATH
+        ? [process.env.ENV_FILE_PATH]
+        : [`.env.${process.env.NODE_ENV ?? 'development'}`, '.env'],
+    }),
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
