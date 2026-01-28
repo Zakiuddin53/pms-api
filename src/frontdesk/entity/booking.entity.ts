@@ -13,15 +13,15 @@ import { BookingSource } from '../../common/enums/booking-source.enum';
 import { Customer } from './customer.entity';
 import { BookingItem } from './booking-item.entity';
 
-@Entity('bookings')
+@Entity()
 export class Booking {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column({ name: 'property_id' })
+  @Column()
   propertyId: number;
 
-  @Column({ name: 'booking_code', unique: true })
+  @Column()
   bookingCode: string;
 
   @Column({
@@ -39,36 +39,36 @@ export class Booking {
   })
   status: BookingStatus;
 
-  @Column({ name: 'customer_id' })
+  @Column()
   customerId: number;
 
   @ManyToOne(() => Customer, (customer) => customer.bookings, {
     onDelete: 'RESTRICT',
   })
-  @JoinColumn({ name: 'customer_id' })
+  @JoinColumn()
   customer: Customer;
 
-  @Column({ name: 'check_in', type: 'date' })
+  @Column()
   checkIn: string;
 
-  @Column({ name: 'check_out', type: 'date' })
+  @Column()
   checkOut: string;
 
-  @Column({ name: 'total_amount', type: 'numeric', default: 0 })
+  @Column()
   totalAmount: number;
 
-  @Column({ name: 'paid_amount', type: 'numeric', default: 0 })
+  @Column()
   paidAmount: number;
 
-  @Column({ name: 'hold_expires_at', type: 'timestamp', nullable: true })
-  holdExpiresAt?: Date | null;
+  @Column({ nullable: true })
+  holdExpiresAt?: Date ;
 
   @OneToMany(() => BookingItem, (item) => item.booking)
   items: BookingItem[];
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn()
   updatedAt: Date;
 }
