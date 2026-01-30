@@ -5,8 +5,9 @@ import { apiReference } from '@scalar/nestjs-api-reference';
 import { AppModule } from './app.module';
 import { webcrypto } from 'crypto';
 
-(global as any).crypto = webcrypto;
-
+if (!(global as any).crypto) {
+  (global as any).crypto = webcrypto;
+}
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(
