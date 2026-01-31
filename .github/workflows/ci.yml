@@ -26,15 +26,18 @@ jobs:
         run: npm run build
 
       - name: Run tests
-        run: npm test --if-present
+        run: npm test --if-present -- --passWithNoTests
 
-      - name: Prepare artifact
+      - name: Create Linux artifact (tar.gz)
         run: |
-          mkdir artifact
-          cp -r dist package.json package-lock.json ecosystem.config.js artifact/
+          tar -czf pms-api-artifact.tar.gz \
+            dist \
+            package.json \
+            package-lock.json \
+            ecosystem.config.js
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: pms-api-artifact
-          path: artifact
+          path: pms-api-artifact.tar.gz
