@@ -1,4 +1,4 @@
-name: CI Build Artifact
+name: Build & Release Artifact
 
 on:
   push:
@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
@@ -26,18 +29,17 @@ jobs:
         run: npm run build
 
       - name: Run tests
-        run: npm test --if-present -- --passWithNoTests
+        run: npm test --if-present
 
-      - name: Create Linux artifact (tar.gz)
+      - name: Prepare artifact
         run: |
-          tar -czf pms-api-artifact.tar.gz \
-            dist \
-            package.json \
-            package-lock.json \
-            ecosystem.config.js
+          mkdir artifact
+          cp -r dist package.json package-lock.json ecosystem.config.js artifact/
+          tar -czf pms-api-artifact.tar.gz -C artifact .
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: pms-api-artifact
-          path: pms-api-artifact.tar.gz
+          tag_name: ${{ github.sha }}
+          name: Release ${{ github.sha }}
+          files: pms-api-artifact.tar.gz
