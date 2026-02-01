@@ -59,6 +59,8 @@ export const RolePermissions: Record<PropertyRole, Permission[]> = {
     Permissions.BOOKINGS_READ,
   ],
   [PropertyRole.PROPERTY_ADMIN]: [
+    Permissions.PROPERTIES_CREATE,
+    Permissions.PROPERTIES_LIST,
     Permissions.PROPERTY_STAFF_CREATE,
     Permissions.PROPERTY_USERS_READ,
     Permissions.ROOM_TYPES_CREATE,

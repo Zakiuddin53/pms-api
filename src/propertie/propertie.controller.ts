@@ -14,7 +14,7 @@ import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('properties')
 export class PropertieController {
-  constructor(private readonly propertieService: PropertieService) {}
+  constructor(private readonly propertieService: PropertieService) { }
 
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermission(Permissions.PROPERTIES_CREATE)
@@ -24,12 +24,18 @@ export class PropertieController {
     return this.propertieService.create(createPropertieDto);
   }
 
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermission(Permissions.PROPERTIES_LIST)
+  // @UseGuards(JwtAuthGuard, PermissionsGuard)
+  // @RequirePermission(Permissions.PROPERTIES_LIST)
   @Get()
   @ApiOperation({ summary: 'get all' })
   async findAll(@Paginate() query: PaginateQuery) {
     return this.propertieService.list(query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'get by id' })
+  async getById(@Param('id') id: string) {
+    return this.propertieService.getById(Number(id));
   }
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)

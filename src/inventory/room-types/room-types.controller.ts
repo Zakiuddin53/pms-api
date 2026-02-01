@@ -13,7 +13,7 @@ import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('properties/:propertyId/room-types')
 export class RoomTypesController {
-  constructor(private readonly roomTypesService: RoomTypesService) {}
+  constructor(private readonly roomTypesService: RoomTypesService) { }
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   @RequirePermission(Permissions.ROOM_TYPES_CREATE)
@@ -26,8 +26,8 @@ export class RoomTypesController {
     return this.roomTypesService.create(Number(propertyId), body);
   }
 
-  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
-  @RequirePermission(Permissions.ROOM_TYPES_READ)
+  // @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
+  // @RequirePermission(Permissions.ROOM_TYPES_READ)
   @Get()
   async list(
     @Param('propertyId') propertyId: string,
@@ -36,8 +36,8 @@ export class RoomTypesController {
     return this.roomTypesService.list(Number(propertyId), query);
   }
 
-  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
-  @RequirePermission(Permissions.ROOM_TYPES_READ)
+  // @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
+  // @RequirePermission(Permissions.ROOM_TYPES_READ)
   @Get(':roomTypeId')
   async getById(
     @Param('propertyId') propertyId: string,

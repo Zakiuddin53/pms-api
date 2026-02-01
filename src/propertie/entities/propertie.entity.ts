@@ -16,6 +16,30 @@ export class Propertie {
   @Column()
   pinCode: number;
 
+  @Column({ nullable: true })
+  city: string;
+
+  @Column({ nullable: true })
+  state: string;
+
+  @Column({ nullable: true })
+  country: string;
+
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
+  @Column({ nullable: true })
+  imageUrl: string;
+
+  @Column('float', { default: 0 })
+  rating: number;
+
+  @Column({ default: 0 })
+  reviewCount: number;
+
+  @Column('simple-array', { nullable: true })
+  amenities: string[];
+
   @CreateDateColumn()
   createdAt: Date;
 

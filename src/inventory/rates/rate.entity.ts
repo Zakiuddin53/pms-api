@@ -17,6 +17,6 @@ export class Rate {
   @Column()
   endDate: string;
 
-  @Column()
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   price: number;
 }

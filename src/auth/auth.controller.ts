@@ -8,7 +8,7 @@ import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('register-super-admin')
   @ApiOperation({ summary: 'create super admin' })
@@ -26,6 +26,6 @@ export class AuthController {
   @Get('me')
   @ApiOperation({ summary: 'get logged in user details' })
   async me(@Req() req: Request) {
-    return this.authService.me(req.user!);
+    return this.authService.me((req as any).user);
   }
 }

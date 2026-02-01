@@ -22,6 +22,18 @@ export class RoomType {
   @Column({ type: 'text', nullable: true })
   description?: string | null;
 
+  @Column({ default: 2 })
+  capacity: number;
+
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  basePrice: number;
+
+  @Column('simple-array', { nullable: true })
+  amenities: string[];
+
+  @Column({ nullable: true })
+  imageUrl: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

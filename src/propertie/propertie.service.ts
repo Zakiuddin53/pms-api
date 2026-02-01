@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import argon2 from 'argon2';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginateQuery, paginate } from 'nestjs-paginate';
@@ -33,6 +33,14 @@ export class PropertieService {
       ...propertiesPaginationConfig,
       defaultSortBy: [['name', 'ASC']],
     });
+  }
+
+  async getById(id: number) {
+    const property = await this.properties.findOne({ where: { id } });
+    if (!property) {
+      throw new NotFoundException('Property not found');
+    }
+    return property;
   }
 
   async createPropertyAdmin(propertyId: number, dto: CreatePropertyAdminDto) {
