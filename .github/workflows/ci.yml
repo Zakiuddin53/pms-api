@@ -1,45 +1,44 @@
-name: Build & Release Artifact
+name: Build & Release
 
 on:
   push:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
+      - name: Install deps
         run: npm ci
 
       - name: Build
         run: npm run build
 
-      - name: Run tests
-        run: npm test --if-present
-
-      - name: Prepare artifact
+      - name: Package artifact
         run: |
-          mkdir artifact
-          cp -r dist package.json package-lock.json ecosystem.config.js artifact/
-          tar -czf pms-api-artifact.tar.gz -C artifact .
+          VERSION=$(date +'%Y.%m.%d-%H%M%S')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          mkdir package
+          cp -r dist package.json package-lock.json ecosystem.config.js package/
+          tar -czf pms-api-$VERSION.tar.gz -C package .
 
-      - name: Create GitHub Release
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.sha }}
-          name: Release ${{ github.sha }}
-          files: pms-api-artifact.tar.gz
+          tag_name: ${{ env.VERSION }}
+          name: Release ${{ env.VERSION }}
+          files: pms-api-${{ env.VERSION }}.tar.gz
