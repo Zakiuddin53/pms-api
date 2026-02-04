@@ -1,7 +1,12 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
+import { CloudinaryService } from '../../common/cloudinary/cloudinary.service';
 import { CreateRoomTypeDto } from './dto/create-room-type.dto';
 import { UpdateRoomTypeDto } from './dto/update-room-type.dto';
 import { RoomType } from './room-type.entity';
@@ -11,14 +16,26 @@ export class RoomTypesService {
   constructor(
     @InjectRepository(RoomType)
     private readonly roomTypes: Repository<RoomType>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async create(propertyId: number, dto: CreateRoomTypeDto) {
-    
+  async create(
+    propertyId: number,
+    dto: CreateRoomTypeDto,
+    files?: Express.Multer.File[],
+  ) {
+    const imageUrls =
+      files && files.length > 0
+        ? await this.cloudinaryService.uploadImages(files)
+        : dto.imageUrls;
+
     const roomType = this.roomTypes.create({
       propertyId,
       name: dto.name,
-      description: dto.description
+      description: dto.description,
+      capacity: dto.capacity,
+      amenities: dto.amenities,
+      imageUrls,
     });
     return this.roomTypes.save(roomType);
   }
@@ -56,6 +73,9 @@ export class RoomTypesService {
     const updated = this.roomTypes.merge(roomType, {
       name: dto.name ?? roomType.name,
       description: dto.description ?? roomType.description,
+      capacity: dto.capacity ?? roomType.capacity,
+      amenities: dto.amenities ?? roomType.amenities,
+      imageUrls: dto.imageUrls ?? roomType.imageUrls,
     });
     return this.roomTypes.save(updated);
   }

@@ -1,4 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Propertie } from '../../propertie/entities/propertie.entity';
+import { RoomType } from '../room-types/room-type.entity';
 
 @Entity()
 export class Rate {
@@ -8,13 +17,25 @@ export class Rate {
   @Column()
   propertyId: number;
 
+  @ManyToOne(() => Propertie, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  property: Propertie;
+
   @Column()
   roomTypeId: number;
 
-  @Column()
+  @ManyToOne(() => RoomType, (roomType) => roomType.rates, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  roomType: RoomType;
+
+  @CreateDateColumn()
   startDate: string;
 
-  @Column()
+  @CreateDateColumn()
   endDate: string;
 
   @Column('decimal', { precision: 10, scale: 2, default: 0 })

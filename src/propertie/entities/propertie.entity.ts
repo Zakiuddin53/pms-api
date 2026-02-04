@@ -1,4 +1,11 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Rate } from '../../inventory/rates/rate.entity';
 import { RoomType } from '../../inventory/room-types/room-type.entity';
 import { UserPropertyRole } from './user-property-role.entity';
 
@@ -48,4 +55,7 @@ export class Propertie {
 
   @OneToMany(() => RoomType, (roomType) => roomType.property)
   roomTypes: RoomType[];
+
+  @OneToMany(() => Rate, (rate) => rate.property)
+  rates: Rate[];
 }

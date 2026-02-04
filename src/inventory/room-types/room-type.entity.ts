@@ -1,5 +1,14 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Propertie } from '../../propertie/entities/propertie.entity';
+import { Rate } from '../rates/rate.entity';
 import { Room } from '../rooms/room.entity';
 
 @Entity()
@@ -25,18 +34,18 @@ export class RoomType {
   @Column({ default: 2 })
   capacity: number;
 
-  @Column('decimal', { precision: 10, scale: 2, default: 0 })
-  basePrice: number;
-
   @Column('simple-array', { nullable: true })
   amenities: string[];
 
-  @Column({ nullable: true })
-  imageUrl: string;
+  @Column('simple-array', { nullable: true })
+  imageUrls: string[];
 
   @CreateDateColumn()
   createdAt: Date;
 
   @OneToMany(() => Room, (room) => room.roomType)
   rooms: Room[];
+
+  @OneToMany(() => Rate, (rate) => rate.roomType)
+  rates: Rate[];
 }

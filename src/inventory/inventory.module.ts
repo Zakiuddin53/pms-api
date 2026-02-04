@@ -15,9 +15,13 @@ import { RoomTypesService } from './room-types/room-types.service';
 import { Room } from './rooms/room.entity';
 import { RoomsController } from './rooms/rooms.controller';
 import { RoomsService } from './rooms/rooms.service';
+import { CloudinaryModule } from '../common/cloudinary/cloudinary.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RoomType, Room, RoomBlock, Rate])],
+  imports: [
+    TypeOrmModule.forFeature([RoomType, Room, RoomBlock, Rate]),
+    CloudinaryModule,
+  ],
   controllers: [
     RoomTypesController,
     RoomsController,
