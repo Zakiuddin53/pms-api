@@ -1,4 +1,18 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { memoryStorage } from 'multer';
 import { Paginate } from 'nestjs-paginate';
 import type { PaginateQuery } from 'nestjs-paginate';
 import { RequirePermission } from '../../common/decorators/require-permission.decorator';
@@ -13,17 +27,24 @@ import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('properties/:propertyId/room-types')
 export class RoomTypesController {
-  constructor(private readonly roomTypesService: RoomTypesService) { }
+  constructor(private readonly roomTypesService: RoomTypesService) {}
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   @RequirePermission(Permissions.ROOM_TYPES_CREATE)
   @ApiOperation({ summary: 'create room type' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FilesInterceptor('images', 10, {
+      storage: memoryStorage(),
+    }),
+  )
   @Post()
   async create(
     @Param('propertyId') propertyId: string,
     @Body() body: CreateRoomTypeDto,
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
-    return this.roomTypesService.create(Number(propertyId), body);
+    return this.roomTypesService.create(Number(propertyId), body, files);
   }
 
   // @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
@@ -43,7 +64,10 @@ export class RoomTypesController {
     @Param('propertyId') propertyId: string,
     @Param('roomTypeId') roomTypeId: string,
   ) {
-    return this.roomTypesService.getById(Number(propertyId), Number(roomTypeId));
+    return this.roomTypesService.getById(
+      Number(propertyId),
+      Number(roomTypeId),
+    );
   }
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
@@ -54,7 +78,11 @@ export class RoomTypesController {
     @Param('roomTypeId') roomTypeId: string,
     @Body() body: UpdateRoomTypeDto,
   ) {
-    return this.roomTypesService.update(Number(propertyId), Number(roomTypeId), body);
+    return this.roomTypesService.update(
+      Number(propertyId),
+      Number(roomTypeId),
+      body,
+    );
   }
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
