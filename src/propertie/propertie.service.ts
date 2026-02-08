@@ -1,8 +1,13 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import argon2 from 'argon2';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginateQuery, paginate } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
+import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 import { PropertyRole } from '../common/enums/property-role.enum';
 import { User } from '../users/user.entity';
 import { UserPropertyRole } from './entities/user-property-role.entity';
@@ -21,11 +26,40 @@ export class PropertieService {
     private readonly users: Repository<User>,
     @InjectRepository(UserPropertyRole)
     private readonly memberships: Repository<UserPropertyRole>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async create(createPropertieDto: CreatePropertieDto) {
-    const property = this.properties.create(createPropertieDto);
-    return this.properties.save(property);
+  async create(
+    createPropertieDto: CreatePropertieDto,
+    files?: Express.Multer.File[],
+  ) {
+    let uploadedImageUrls: string[] | null = null;
+    if (files && files.length > 0) {
+      try {
+        uploadedImageUrls = await this.cloudinaryService.uploadImages(
+          files,
+          'properties',
+        );
+      } catch {
+        throw new BadRequestException('Failed to upload property images');
+      }
+    }
+
+    const property = this.properties.create({
+      name: createPropertieDto.name,
+      address: createPropertieDto.address,
+      pinCode: createPropertieDto.pinCode,
+      city: createPropertieDto.city,
+      state: createPropertieDto.state,
+      imageUrls: uploadedImageUrls ?? createPropertieDto.imageUrls ?? null,
+      rating: createPropertieDto.rating ?? 0,
+    });
+
+    try {
+      return await this.properties.save(property);
+    } catch {
+      throw new BadRequestException('Failed to create property');
+    }
   }
 
   async list(query: PaginateQuery) {
@@ -44,7 +78,9 @@ export class PropertieService {
   }
 
   async createPropertyAdmin(propertyId: number, dto: CreatePropertyAdminDto) {
-    const property = await this.properties.findOne({ where: { id: propertyId } });
+    const property = await this.properties.findOne({
+      where: { id: propertyId },
+    });
     if (!property) {
       throw new BadRequestException('Property not found');
     }
@@ -86,7 +122,9 @@ export class PropertieService {
   }
 
   async createStaff(propertyId: number, dto: CreatePropertyStaffDto) {
-    const property = await this.properties.findOne({ where: { id: propertyId } });
+    const property = await this.properties.findOne({
+      where: { id: propertyId },
+    });
     if (!property) {
       throw new BadRequestException('Property not found');
     }
@@ -130,14 +168,14 @@ export class PropertieService {
   async listPropertyUsers(propertyId: number) {
     const memberships = await this.memberships.find({
       where: { propertyId, isActive: true },
-      relations: { user: true },
-      order: { user: { name: 'ASC' } },
+      relations: { User: true },
+      order: { User: { name: 'ASC' } },
     });
 
     return memberships.map((membership) => ({
-      id: membership.user.id,
-      name: membership.user.name,
-      email: membership.user.email,
+      id: membership.User.id,
+      name: membership.User.name,
+      email: membership.User.email,
       role: membership.role,
       propertyId: membership.propertyId,
       isActive: membership.isActive,

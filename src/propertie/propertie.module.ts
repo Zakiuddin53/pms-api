@@ -8,10 +8,19 @@ import { UserPropertyRole } from './entities/user-property-role.entity';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PropertyRoleGuard } from '../common/guards/property-role.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
+import { CloudinaryModule } from '@/common/cloudinary/cloudinary.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Propertie, User, UserPropertyRole])],
+  imports: [
+    TypeOrmModule.forFeature([Propertie, User, UserPropertyRole]),
+    CloudinaryModule,
+  ],
   controllers: [PropertieController],
-  providers: [PropertieService, JwtAuthGuard, PropertyRoleGuard, PermissionsGuard],
+  providers: [
+    PropertieService,
+    JwtAuthGuard,
+    PropertyRoleGuard,
+    PermissionsGuard,
+  ],
 })
 export class PropertieModule {}

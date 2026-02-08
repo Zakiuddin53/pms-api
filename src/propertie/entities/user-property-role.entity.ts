@@ -18,8 +18,8 @@ export class UserPropertyRole {
   @Column()
   userId: number;
 
-  @Column({  nullable: true })
-  propertyId: number | null;
+  @Column({ nullable: true })
+  propertyId: number;
 
   @Column({
     type: 'enum',
@@ -36,11 +36,11 @@ export class UserPropertyRole {
 
   @ManyToOne(() => User, (user) => user.propertyRoles)
   @JoinColumn()
-  user: User;
+  User: User;
 
-  @ManyToOne(() => Propertie, (property) => property.memberships, {
+  @ManyToOne(() => Propertie, (p) => p.UserRole, {
     nullable: true,
   })
   @JoinColumn()
-  property?: Propertie;
+  Property?: Propertie;
 }

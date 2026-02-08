@@ -26,7 +26,7 @@ export class RoomTypesService {
   ) {
     const imageUrls =
       files && files.length > 0
-        ? await this.cloudinaryService.uploadImages(files)
+        ? await this.cloudinaryService.uploadImages(files, 'room-types')
         : dto.imageUrls;
 
     const roomType = this.roomTypes.create({
@@ -50,8 +50,8 @@ export class RoomTypesService {
         maxOccupancy: [FilterOperator.GTE, FilterOperator.LTE],
       },
       relations: {
-        rooms: true,
-        property: true,
+        Rooms: true,
+        Property: true,
       },
       where: { propertyId },
     });
@@ -60,7 +60,7 @@ export class RoomTypesService {
   async getById(propertyId: number, id: number) {
     const roomType = await this.roomTypes.findOne({
       where: { id, propertyId },
-      relations: { rooms: true, property: true },
+      relations: { Rooms: true, Property: true },
     });
     if (!roomType) {
       throw new NotFoundException('Room type not found');

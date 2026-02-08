@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { Paginate } from 'nestjs-paginate';
 import type { PaginateQuery } from 'nestjs-paginate';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
@@ -10,7 +20,8 @@ import { PropertieService } from './propertie.service';
 import { CreatePropertieDto } from './dto/create-propertie.dto';
 import { CreatePropertyAdminDto } from './dto/create-property-admin.dto';
 import { CreatePropertyStaffDto } from './dto/create-property-staff.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
+import { memoryStorage } from 'multer';
 
 @Controller('properties')
 export class PropertieController {
@@ -20,8 +31,17 @@ export class PropertieController {
   @RequirePermission(Permissions.PROPERTIES_CREATE)
   @Post()
   @ApiOperation({ summary: 'create' })
-  async create(@Body() createPropertieDto: CreatePropertieDto) {
-    return this.propertieService.create(createPropertieDto);
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FilesInterceptor('images', 10, {
+      storage: memoryStorage(),
+    }),
+  )
+  async create(
+    @Body() createPropertieDto: CreatePropertieDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    return this.propertieService.create(createPropertieDto, files);
   }
 
   // @UseGuards(JwtAuthGuard, PermissionsGuard)
