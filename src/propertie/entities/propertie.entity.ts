@@ -29,33 +29,21 @@ export class Propertie {
   @Column({ nullable: true })
   state: string;
 
-  @Column({ nullable: true })
-  country: string;
-
-  @Column({ type: 'text', nullable: true })
-  description: string;
-
-  @Column({ nullable: true })
-  imageUrl: string;
+  @Column({ nullable: true, type: 'json' })
+  imageUrls: string[];
 
   @Column('float', { default: 0 })
   rating: number;
 
-  @Column({ default: 0 })
-  reviewCount: number;
-
-  @Column('simple-array', { nullable: true })
-  amenities: string[];
-
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToMany(() => UserPropertyRole, (membership) => membership.property)
-  memberships: UserPropertyRole[];
+  @OneToMany(() => UserPropertyRole, (ur) => ur.Property)
+  UserRole: UserPropertyRole[];
 
-  @OneToMany(() => RoomType, (roomType) => roomType.property)
-  roomTypes: RoomType[];
+  @OneToMany(() => RoomType, (roomType) => roomType.Property)
+  RoomTypes: RoomType[];
 
   @OneToMany(() => Rate, (rate) => rate.property)
-  rates: Rate[];
+  Rates: Rate[];
 }

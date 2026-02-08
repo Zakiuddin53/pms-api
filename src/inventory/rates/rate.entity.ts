@@ -26,11 +26,11 @@ export class Rate {
   @Column()
   roomTypeId: number;
 
-  @ManyToOne(() => RoomType, (roomType) => roomType.rates, {
+  @ManyToOne(() => RoomType, (roomType) => roomType.Rates, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  roomType: RoomType;
+  RoomType: RoomType;
 
   @CreateDateColumn()
   startDate: string;

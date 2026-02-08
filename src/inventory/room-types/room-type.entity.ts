@@ -19,11 +19,11 @@ export class RoomType {
   @Column()
   propertyId: number;
 
-  @ManyToOne(() => Propertie, (property) => property.roomTypes, {
+  @ManyToOne(() => Propertie, (p) => p.RoomTypes, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  property: Propertie;
+  Property: Propertie;
 
   @Column()
   name: string;
@@ -37,15 +37,15 @@ export class RoomType {
   @Column('simple-array', { nullable: true })
   amenities: string[];
 
-  @Column('simple-array', { nullable: true })
+  @Column({ nullable: true, type: 'json' })
   imageUrls: string[];
 
   @CreateDateColumn()
   createdAt: Date;
 
   @OneToMany(() => Room, (room) => room.roomType)
-  rooms: Room[];
+  Rooms: Room[];
 
-  @OneToMany(() => Rate, (rate) => rate.roomType)
-  rates: Rate[];
+  @OneToMany(() => Rate, (rate) => rate.RoomType)
+  Rates: Rate[];
 }

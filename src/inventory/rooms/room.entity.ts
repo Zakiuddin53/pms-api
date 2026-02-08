@@ -1,4 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { RoomStatus } from '../../common/enums/room-status.enum';
 import { Propertie } from '../../propertie/entities/propertie.entity';
 import { RoomType } from '../room-types/room-type.entity';
@@ -20,7 +26,7 @@ export class Room {
   @Column()
   roomTypeId: number;
 
-  @ManyToOne(() => RoomType, (roomType) => roomType.rooms, {
+  @ManyToOne(() => RoomType, (roomType) => roomType.Rooms, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()

@@ -221,7 +221,7 @@ async function bootstrap() {
         manager.create(Room, {
           roomNumber: `${type.name.substring(0, 1).toUpperCase()}-${100 + index + 1}`,
           roomType: type,
-          property: type.property,
+          property: type.Property,
           status: RoomStatus.ACTIVE,
         }),
       ),
@@ -241,7 +241,7 @@ async function bootstrap() {
 
         rates.push(
           manager.create(Rate, {
-            property: type.property,
+            property: type.Property,
             roomType: type,
             startDate: dateStr,
             endDate: dateStr,

@@ -15,7 +15,7 @@ export class CloudinaryService {
 
   async uploadImage(
     file: Express.Multer.File,
-    folder = 'room-types',
+    folder: string,
   ): Promise<string> {
     return new Promise((resolve, reject) => {
       const upload = cloudinary.uploader.upload_stream(
@@ -34,7 +34,7 @@ export class CloudinaryService {
 
   async uploadImages(
     files: Express.Multer.File[],
-    folder = 'room-types',
+    folder: string,
   ): Promise<string[]> {
     return Promise.all(files.map((file) => this.uploadImage(file, folder)));
   }

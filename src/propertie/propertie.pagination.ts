@@ -10,6 +10,6 @@ export const propertiesPaginationConfig: PaginateConfig<Propertie> = {
     pinCode: [FilterOperator.EQ, FilterOperator.ILIKE],
   },
   relations: {
-    roomTypes: true,
+    RoomTypes: true,
   },
 };
