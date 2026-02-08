@@ -4,11 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Brackets,
-  Like,
-  Repository,
-} from 'typeorm';
+import { Brackets, Like, Repository } from 'typeorm';
 import { Booking } from '../entity/booking.entity';
 import { BookingItem } from '../entity/booking-item.entity';
 import { Customer } from '../entity/customer.entity';
@@ -40,7 +36,7 @@ export class BookingsService {
     private readonly roomBlocks: Repository<RoomBlock>,
     @InjectRepository(Rate)
     private readonly rates: Repository<Rate>,
-  ) {}
+  ) { }
 
   async getAvailability(propertyId: number, query: AvailabilityQueryDto) {
     const { checkIn, checkOut, roomTypeId } = query;
@@ -227,7 +223,38 @@ export class BookingsService {
     }
 
     await this.bookings.save(booking);
+    await this.bookings.save(booking);
     return booking;
+  }
+
+  async updatePaymentDetails(
+    bookingId: number,
+    details: {
+      razorpayOrderId: string;
+      razorpayPaymentId: string;
+      razorpaySignature: string;
+    },
+  ) {
+    return this.bookings.update(bookingId, {
+      razorpayOrderId: details.razorpayOrderId,
+      razorpayPaymentId: details.razorpayPaymentId,
+      razorpaySignature: details.razorpaySignature,
+    });
+  }
+
+  async updateRefundDetails(
+    bookingId: number,
+    details: {
+      razorpayRefundId: string;
+      razorpayRefundStatus: string;
+    },
+  ) {
+    return this.bookings.update(bookingId, {
+      razorpayRefundId: details.razorpayRefundId,
+      razorpayRefundStatus: details.razorpayRefundStatus,
+      status: BookingStatus.CANCELLED, // Auto-cancel booking on refund
+      paidAmount: 0,
+    });
   }
 
   async getBookingById(propertyId: number, bookingId: number) {
@@ -241,6 +268,13 @@ export class BookingsService {
     }
 
     return booking;
+  }
+
+  async getBookingByRazorpayOrderId(razorpayOrderId: string) {
+    return this.bookings.findOne({
+      where: { razorpayOrderId },
+      relations: { customer: true },
+    });
   }
 
   async getBookingByCode(bookingCode: string) {
@@ -311,10 +345,9 @@ export class BookingsService {
     checkIn: string,
     checkOut: string,
   ) {
-    const totalRooms = await this.getTotalRoomsByRoomType(
-      propertyId,
-      [roomTypeId],
-    );
+    const totalRooms = await this.getTotalRoomsByRoomType(propertyId, [
+      roomTypeId,
+    ]);
     const bookedRooms = await this.getBookedRoomsByRoomType(
       propertyId,
       [roomTypeId],
@@ -374,10 +407,7 @@ export class BookingsService {
       .andWhere(
         new Brackets((qb) => {
           qb.where('booking.status IN (:...activeStatuses)', {
-            activeStatuses: [
-              BookingStatus.CONFIRMED,
-              BookingStatus.CHECKED_IN,
-            ],
+            activeStatuses: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN],
           }).orWhere(
             'booking.status = :holdStatus AND booking.holdExpiresAt > :now',
             { holdStatus: BookingStatus.HOLD, now },
@@ -439,7 +469,7 @@ export class BookingsService {
       const total = totalRooms.get(roomTypeId) ?? 0;
       const blockedRoomsCount = blockedByRoomType.has(roomTypeId)
         ? total
-        : blockedByRoomId.get(roomTypeId) ?? 0;
+        : (blockedByRoomId.get(roomTypeId) ?? 0);
       result.set(roomTypeId, Math.min(total, blockedRoomsCount));
     }
 
@@ -550,10 +580,7 @@ export class BookingsService {
     return expiresAt;
   }
 
-  private async generateBookingCode(
-    roomTypeId: number,
-    checkIn: string,
-  ) {
+  private async generateBookingCode(roomTypeId: number, checkIn: string) {
     const formattedRoomType = String(roomTypeId).padStart(2, '0');
     const date = new Date(checkIn);
     const day = String(date.getDate()).padStart(2, '0');
@@ -563,10 +590,7 @@ export class BookingsService {
     return `${prefix}${suffix}${day}`;
   }
 
-  private async getNextBookingSuffix(
-    prefix: string,
-    day: string,
-  ) {
+  private async getNextBookingSuffix(prefix: string, day: string) {
     const existingCodes = await this.bookings.find({
       select: { bookingCode: true },
       where: { bookingCode: Like(`${prefix}__${day}`) },

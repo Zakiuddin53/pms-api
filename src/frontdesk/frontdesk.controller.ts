@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { BookingsService } from './service/bookings.service';
 import { AvailabilityQueryDto } from './dto/availability-query.dto';
 import { HoldBookingDto } from './dto/hold-booking.dto';
@@ -10,22 +18,20 @@ import { RequirePermission } from '../common/decorators/require-permission.decor
 import { Permissions } from '../common/permissions/permissions';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@ApiTags("Front Desk")
+@ApiTags('Front Desk')
 @Controller('properties/:propertyId')
 export class FrontdeskController {
-  constructor(private readonly bookingsService: BookingsService) { }
-
-
+  constructor(private readonly bookingsService: BookingsService) {}
 
   @Get('bookings/code/:bookingCode')
-  @ApiOperation({ summary: "get booking by code" })
+  @ApiOperation({ summary: 'get booking by code' })
   async getBookingByCode(@Param('bookingCode') bookingCode: string) {
     return this.bookingsService.getBookingByCode(bookingCode);
   }
 
   // @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   // @RequirePermission(Permissions.AVAILABILITY_READ)
-  @ApiOperation({ summary: "check room availiblity" })
+  @ApiOperation({ summary: 'check room availiblity' })
   @Get('availability')
   async getAvailability(
     @Param('propertyId') propertyId: string,
@@ -36,7 +42,7 @@ export class FrontdeskController {
 
   // @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   // @RequirePermission(Permissions.BOOKINGS_HOLD)
-  @ApiOperation({ summary: "create booking" })
+  @ApiOperation({ summary: 'create booking' })
   @Post('bookings/hold')
   async createBooking(
     @Param('propertyId') propertyId: string,
@@ -47,7 +53,7 @@ export class FrontdeskController {
 
   // @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   // @RequirePermission(Permissions.BOOKINGS_CONFIRM)
-  @ApiOperation({ summary: "confirm booking" })
+  @ApiOperation({ summary: 'confirm booking' })
   @Post('bookings/:bookingId/confirm')
   async confirmBooking(
     @Param('propertyId') propertyId: string,
@@ -63,7 +69,7 @@ export class FrontdeskController {
 
   // @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   // @RequirePermission(Permissions.BOOKINGS_READ)
-  @ApiOperation({ summary: "get booking" })
+  @ApiOperation({ summary: 'get booking' })
   @Get('bookings/:bookingId')
   async getBookingById(
     @Param('propertyId') propertyId: string,

@@ -8,6 +8,7 @@ import { PropertieModule } from './propertie/propertie.module';
 import { ConfigModule } from '@nestjs/config';
 import { InventoryModule } from './inventory/inventory.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -35,7 +36,9 @@ import { ScheduleModule } from '@nestjs/schedule';
     AuthModule,
     FrontdeskModule,
     PropertieModule,
+    PropertieModule,
     InventoryModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

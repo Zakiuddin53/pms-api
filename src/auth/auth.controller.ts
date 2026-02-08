@@ -8,7 +8,7 @@ import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register-super-admin')
   @ApiOperation({ summary: 'create super admin' })

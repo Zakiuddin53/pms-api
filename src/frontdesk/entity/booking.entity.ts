@@ -61,7 +61,22 @@ export class Booking {
   paidAmount: number;
 
   @Column({ nullable: true })
-  holdExpiresAt?: Date ;
+  holdExpiresAt?: Date;
+
+  @Column({ nullable: true })
+  razorpayOrderId?: string;
+
+  @Column({ nullable: true })
+  razorpayPaymentId?: string;
+
+  @Column({ nullable: true })
+  razorpaySignature?: string;
+
+  @Column({ nullable: true })
+  razorpayRefundId?: string;
+
+  @Column({ nullable: true })
+  razorpayRefundStatus?: string;
 
   @OneToMany(() => BookingItem, (item) => item.booking)
   items: BookingItem[];

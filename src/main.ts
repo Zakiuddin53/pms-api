@@ -11,6 +11,7 @@ if (!(global as any).crypto) {
 const allowedOrigins = [
   'http://localhost:3000', // dev
   'https://arooba-pms.vercel.app', // production frontend
+  'http://192.168.29.147:3000',
 ];
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -50,6 +51,6 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
 bootstrap();

@@ -25,5 +25,6 @@ import { Rate } from '../inventory/rates/rate.entity';
   ],
   controllers: [FrontdeskController],
   providers: [BookingsService, BookingCleanupService],
+  exports: [BookingsService],
 })
 export class FrontdeskModule {}

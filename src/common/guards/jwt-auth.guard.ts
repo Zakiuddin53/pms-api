@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import jwt from 'jsonwebtoken';
 import { GlobalRole } from '../enums/global-role.enum';
 import { PropertyRole } from '../enums/property-role.enum';

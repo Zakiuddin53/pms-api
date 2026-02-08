@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { Paginate } from 'nestjs-paginate';
 import type { PaginateQuery } from 'nestjs-paginate';
 import { RequirePermission } from '../../common/decorators/require-permission.decorator';
@@ -13,13 +22,16 @@ import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('properties/:propertyId/rooms')
 export class RoomsController {
-  constructor(private readonly roomsService: RoomsService) { }
+  constructor(private readonly roomsService: RoomsService) {}
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   @RequirePermission(Permissions.ROOMS_CREATE)
   @ApiOperation({ summary: 'add room' })
   @Post()
-  async create(@Param('propertyId') propertyId: string, @Body() body: CreateRoomDto) {
+  async create(
+    @Param('propertyId') propertyId: string,
+    @Body() body: CreateRoomDto,
+  ) {
     return this.roomsService.create(Number(propertyId), body);
   }
 
@@ -57,7 +69,10 @@ export class RoomsController {
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   @RequirePermission(Permissions.ROOMS_DELETE)
   @Delete(':roomId')
-  async remove(@Param('propertyId') propertyId: string, @Param('roomId') roomId: string) {
+  async remove(
+    @Param('propertyId') propertyId: string,
+    @Param('roomId') roomId: string,
+  ) {
     return this.roomsService.remove(Number(propertyId), Number(roomId));
   }
 }
