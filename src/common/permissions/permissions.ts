@@ -3,6 +3,7 @@ import { PropertyRole } from '../enums/property-role.enum';
 export const Permissions = {
   PROPERTIES_CREATE: 'properties:create',
   PROPERTIES_LIST: 'properties:list',
+  PROPERTIES_UPDATE: 'properties:update',
   PROPERTY_ADMINS_CREATE: 'properties:admins:create',
   PROPERTY_STAFF_CREATE: 'properties:staff:create',
   PROPERTY_USERS_READ: 'properties:users:read',
@@ -34,6 +35,7 @@ export const RolePermissions: Record<PropertyRole, Permission[]> = {
   [PropertyRole.SUPER_ADMIN]: [
     Permissions.PROPERTIES_CREATE,
     Permissions.PROPERTIES_LIST,
+    Permissions.PROPERTIES_UPDATE,
     Permissions.PROPERTY_ADMINS_CREATE,
     Permissions.PROPERTY_STAFF_CREATE,
     Permissions.PROPERTY_USERS_READ,
@@ -61,6 +63,7 @@ export const RolePermissions: Record<PropertyRole, Permission[]> = {
   [PropertyRole.PROPERTY_ADMIN]: [
     Permissions.PROPERTIES_CREATE,
     Permissions.PROPERTIES_LIST,
+    Permissions.PROPERTIES_UPDATE,
     Permissions.PROPERTY_STAFF_CREATE,
     Permissions.PROPERTY_USERS_READ,
     Permissions.ROOM_TYPES_CREATE,

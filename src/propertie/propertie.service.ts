@@ -12,6 +12,7 @@ import { PropertyRole } from '../common/enums/property-role.enum';
 import { User } from '../users/user.entity';
 import { UserPropertyRole } from './entities/user-property-role.entity';
 import { CreatePropertieDto } from './dto/create-propertie.dto';
+import { UpdatePropertieDto } from './dto/update-propertie.dto';
 import { CreatePropertyAdminDto } from './dto/create-property-admin.dto';
 import { CreatePropertyStaffDto } from './dto/create-property-staff.dto';
 import { Propertie } from './entities/propertie.entity';
@@ -75,6 +76,54 @@ export class PropertieService {
       throw new NotFoundException('Property not found');
     }
     return property;
+  }
+
+  async update(
+    id: number,
+    updatePropertieDto: UpdatePropertieDto,
+    files?: Express.Multer.File[],
+  ) {
+    const property = await this.properties.findOne({ where: { id } });
+    if (!property) {
+      throw new NotFoundException('Property not found');
+    }
+
+    let uploadedImageUrls: string[] | null = null;
+    if (files && files.length > 0) {
+      try {
+        uploadedImageUrls = await this.cloudinaryService.uploadImages(
+          files,
+          'properties',
+        );
+      } catch {
+        throw new BadRequestException('Failed to upload property images');
+      }
+    }
+
+    if (updatePropertieDto.name !== undefined) {
+      property.name = updatePropertieDto.name;
+    }
+    if (updatePropertieDto.address !== undefined) {
+      property.address = updatePropertieDto.address;
+    }
+    if (updatePropertieDto.pinCode !== undefined) {
+      property.pinCode = updatePropertieDto.pinCode;
+    }
+    if (updatePropertieDto.city !== undefined) {
+      property.city = updatePropertieDto.city;
+    }
+    if (updatePropertieDto.state !== undefined) {
+      property.state = updatePropertieDto.state;
+    }
+    if (uploadedImageUrls) {
+      property.imageUrls = uploadedImageUrls;
+    } else if (updatePropertieDto.imageUrls !== undefined) {
+      property.imageUrls = updatePropertieDto.imageUrls;
+    }
+    if (updatePropertieDto.rating !== undefined) {
+      property.rating = updatePropertieDto.rating;
+    }
+    return await this.properties.save(property);
   }
 
   async createPropertyAdmin(propertyId: number, dto: CreatePropertyAdminDto) {

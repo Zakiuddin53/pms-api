@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   UploadedFiles,
   UseGuards,
@@ -18,6 +19,7 @@ import { PropertyRoleGuard } from '../common/guards/property-role.guard';
 import { Permissions } from '../common/permissions/permissions';
 import { PropertieService } from './propertie.service';
 import { CreatePropertieDto } from './dto/create-propertie.dto';
+import { UpdatePropertieDto } from './dto/update-propertie.dto';
 import { CreatePropertyAdminDto } from './dto/create-property-admin.dto';
 import { CreatePropertyStaffDto } from './dto/create-property-staff.dto';
 import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
@@ -25,7 +27,7 @@ import { memoryStorage } from 'multer';
 
 @Controller('properties')
 export class PropertieController {
-  constructor(private readonly propertieService: PropertieService) { }
+  constructor(private readonly propertieService: PropertieService) {}
 
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermission(Permissions.PROPERTIES_CREATE)
@@ -56,6 +58,24 @@ export class PropertieController {
   @ApiOperation({ summary: 'get by id' })
   async getById(@Param('id') id: string) {
     return this.propertieService.getById(Number(id));
+  }
+
+  // @UseGuards(JwtAuthGuard, PermissionsGuard)
+  // @RequirePermission(Permissions.PROPERTIES_UPDATE)
+  @Patch(':id')
+  @ApiOperation({ summary: 'update property' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FilesInterceptor('images', 10, {
+      storage: memoryStorage(),
+    }),
+  )
+  async update(
+    @Param('id') id: string,
+    @Body() updatePropertieDto: UpdatePropertieDto,
+    @UploadedFiles() files?: Express.Multer.File[],
+  ) {
+    return this.propertieService.update(Number(id), updatePropertieDto, files);
   }
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
