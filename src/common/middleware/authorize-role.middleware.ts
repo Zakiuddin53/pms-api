@@ -13,7 +13,9 @@ export const authorizeRole =
       return next();
     }
 
-    const hasRole = req.user.roles?.some((role) => allowedRoles.includes(role.role));
+    const hasRole = req.user.roles?.some((role) =>
+      allowedRoles.includes(role.role),
+    );
     if (!hasRole) {
       return res.status(403).json({ message: 'Forbidden' });
     }

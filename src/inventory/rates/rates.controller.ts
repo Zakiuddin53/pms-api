@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { Paginate } from 'nestjs-paginate';
 import type { PaginateQuery } from 'nestjs-paginate';
 import { RequirePermission } from '../../common/decorators/require-permission.decorator';
@@ -17,7 +26,10 @@ export class RatesController {
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   @RequirePermission(Permissions.RATES_CREATE)
   @Post()
-  async create(@Param('propertyId') propertyId: string, @Body() body: CreateRateDto) {
+  async create(
+    @Param('propertyId') propertyId: string,
+    @Body() body: CreateRateDto,
+  ) {
     return this.ratesService.create(Number(propertyId), body);
   }
 
@@ -55,7 +67,10 @@ export class RatesController {
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   @RequirePermission(Permissions.RATES_DELETE)
   @Delete(':rateId')
-  async remove(@Param('propertyId') propertyId: string, @Param('rateId') rateId: string) {
+  async remove(
+    @Param('propertyId') propertyId: string,
+    @Param('rateId') rateId: string,
+  ) {
     return this.ratesService.remove(Number(propertyId), Number(rateId));
   }
 }

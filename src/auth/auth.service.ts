@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import argon2 from 'argon2';
 import { sign, type Secret, type SignOptions } from 'jsonwebtoken';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -117,7 +121,7 @@ export class AuthService {
           membership.role !== PropertyRole.SUPER_ADMIN,
       )
       .map((membership) => ({
-        propertyId: membership.propertyId!,
+        propertyId: membership.propertyId,
         role: membership.role,
       }));
 

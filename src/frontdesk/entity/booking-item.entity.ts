@@ -55,7 +55,7 @@ export class BookingItem {
   @Column()
   children: number;
 
-  @Column({type: 'jsonb' })
+  @Column({ type: 'jsonb' })
   pricePerNight: Record<string, number>;
 
   @CreateDateColumn()

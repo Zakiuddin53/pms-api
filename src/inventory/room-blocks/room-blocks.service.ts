@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
@@ -78,8 +82,15 @@ export class RoomBlocksService {
     const block = await this.getById(propertyId, id);
 
     if (dto.roomId || dto.roomTypeId) {
-      if (!dto.roomId && !dto.roomTypeId && !block.roomId && !block.roomTypeId) {
-        throw new BadRequestException('Either roomId or roomTypeId is required');
+      if (
+        !dto.roomId &&
+        !dto.roomTypeId &&
+        !block.roomId &&
+        !block.roomTypeId
+      ) {
+        throw new BadRequestException(
+          'Either roomId or roomTypeId is required',
+        );
       }
 
       if (dto.roomId) {

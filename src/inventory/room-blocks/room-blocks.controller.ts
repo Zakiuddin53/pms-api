@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { Paginate } from 'nestjs-paginate';
 import type { PaginateQuery } from 'nestjs-paginate';
 import { RequirePermission } from '../../common/decorators/require-permission.decorator';
@@ -52,7 +61,11 @@ export class RoomBlocksController {
     @Param('blockId') blockId: string,
     @Body() body: UpdateRoomBlockDto,
   ) {
-    return this.roomBlocksService.update(Number(propertyId), Number(blockId), body);
+    return this.roomBlocksService.update(
+      Number(propertyId),
+      Number(blockId),
+      body,
+    );
   }
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
