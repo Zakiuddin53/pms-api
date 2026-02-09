@@ -42,3 +42,14 @@ jobs:
           tag_name: ${{ env.VERSION }}
           name: Release ${{ env.VERSION }}
           files: pms-api-${{ env.VERSION }}.tar.gz
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+            cd ~/pms-api
+            ./deploy.sh latest
