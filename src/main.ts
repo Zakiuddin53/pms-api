@@ -9,18 +9,21 @@ import { webcrypto } from 'crypto';
 if (!(global as any).crypto) {
   (global as any).crypto = webcrypto;
 }
-const allowedOrigins = [
-  'http://localhost:3000', // dev
-  'https://arooba-pms.vercel.app', // production frontend
-  'http://192.168.29.147:3000',
-];
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const allowedOrigins = process.env.CORS_ORIGINS;
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true); // allow requests with this origin
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
       } else {
+        console.warn(`CORS blocked origin: ${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     },
