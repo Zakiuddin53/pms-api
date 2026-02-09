@@ -11,5 +11,6 @@ export const propertiesPaginationConfig: PaginateConfig<Propertie> = {
   },
   relations: {
     RoomTypes: true,
+    Rates: true,
   },
 };
