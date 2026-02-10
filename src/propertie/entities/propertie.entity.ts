@@ -24,13 +24,13 @@ export class Propertie {
   pinCode: number;
 
   @Column({ nullable: true })
-  city: string;
-
-  @Column()
-  description: string;
+  city?: string;
 
   @Column({ nullable: true })
-  state: string;
+  description?: string;
+
+  @Column({ nullable: true })
+  state?: string;
 
   @Column({ nullable: true, type: 'json' })
   imageUrls: string[];
