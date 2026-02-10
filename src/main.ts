@@ -12,15 +12,23 @@ if (!(global as any).crypto) {
 const allowedOrigins = [
   'http://localhost:3000', // dev
   'https://arooba-pms.vercel.app', // production frontend
-  'res.cloudinary.com',
 ];
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true); // allow requests with this origin
+      if (!origin) {
+        return callback(null, true);
+      }
+      const isAllowed = allowedOrigins.some((allowedOrigin) => {
+        return origin === allowedOrigin || origin === allowedOrigin + '/';
+      });
+
+      if (isAllowed) {
+        callback(null, true);
       } else {
+        console.error(`CORS Error: Origin "${origin}" not allowed`);
+        console.error('Allowed origins:', allowedOrigins);
         callback(new Error('Not allowed by CORS'));
       }
     },
