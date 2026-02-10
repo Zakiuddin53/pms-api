@@ -43,7 +43,4 @@ export class Propertie {
 
   @OneToMany(() => RoomType, (roomType) => roomType.Property)
   RoomTypes: RoomType[];
-
-  @OneToMany(() => Rate, (rate) => rate.property)
-  Rates: Rate[];
 }

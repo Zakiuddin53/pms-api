@@ -71,11 +71,14 @@ export class PropertieService {
   }
 
   async getById(id: number) {
-    const property = await this.properties.findOne({ where: { id } });
-    if (!property) {
-      throw new NotFoundException('Property not found');
-    }
-    return property;
+    return await this.properties.findOneOrFail({
+      where: { id },
+      relations: {
+        RoomTypes: {
+          Rates: true,
+        },
+      },
+    });
   }
 
   async update(

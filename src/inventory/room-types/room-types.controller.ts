@@ -73,16 +73,25 @@ export class RoomTypesController {
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
   @RequirePermission(Permissions.ROOM_TYPES_UPDATE)
+  @ApiOperation({ summary: 'update room type' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FilesInterceptor('images', 10, {
+      storage: memoryStorage(),
+    }),
+  )
   @Patch(':roomTypeId')
   async update(
     @Param('propertyId') propertyId: string,
     @Param('roomTypeId') roomTypeId: string,
     @Body() body: UpdateRoomTypeDto,
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
     return this.roomTypesService.update(
       Number(propertyId),
       Number(roomTypeId),
       body,
+      files,
     );
   }
 

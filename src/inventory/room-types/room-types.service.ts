@@ -68,14 +68,24 @@ export class RoomTypesService {
     return roomType;
   }
 
-  async update(propertyId: number, id: number, dto: UpdateRoomTypeDto) {
+  async update(
+    propertyId: number,
+    id: number,
+    dto: UpdateRoomTypeDto,
+    files?: Express.Multer.File[],
+  ) {
     const roomType = await this.getById(propertyId, id);
+    const imageUrls =
+      files && files.length > 0
+        ? await this.cloudinaryService.uploadImages(files, 'room-types')
+        : (dto.imageUrls ?? roomType.imageUrls);
+
     const updated = this.roomTypes.merge(roomType, {
       name: dto.name ?? roomType.name,
       description: dto.description ?? roomType.description,
       capacity: dto.capacity ?? roomType.capacity,
       amenities: dto.amenities ?? roomType.amenities,
-      imageUrls: dto.imageUrls ?? roomType.imageUrls,
+      imageUrls,
     });
     return this.roomTypes.save(updated);
   }
