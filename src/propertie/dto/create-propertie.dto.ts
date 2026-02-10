@@ -25,6 +25,9 @@ export class CreatePropertieDto {
   @IsString()
   city?: string;
 
+  @IsString()
+  description: string;
+
   @IsOptional()
   @IsString()
   state?: string;

@@ -26,6 +26,9 @@ export class Propertie {
   @Column({ nullable: true })
   city: string;
 
+  @Column()
+  description: string;
+
   @Column({ nullable: true })
   state: string;
 

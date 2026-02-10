@@ -51,6 +51,7 @@ export class PropertieService {
       address: createPropertieDto.address,
       pinCode: createPropertieDto.pinCode,
       city: createPropertieDto.city,
+      description: createPropertieDto.description,
       state: createPropertieDto.state,
       imageUrls: uploadedImageUrls ?? createPropertieDto.imageUrls ?? null,
       rating: createPropertieDto.rating ?? 0,
@@ -114,6 +115,9 @@ export class PropertieService {
     }
     if (updatePropertieDto.city !== undefined) {
       property.city = updatePropertieDto.city;
+    }
+    if (updatePropertieDto.description !== undefined) {
+      property.description = updatePropertieDto.description;
     }
     if (updatePropertieDto.state !== undefined) {
       property.state = updatePropertieDto.state;
