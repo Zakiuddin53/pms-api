@@ -71,8 +71,8 @@ export class RoomTypesController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
-  @RequirePermission(Permissions.ROOM_TYPES_UPDATE)
+  // @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
+  // @RequirePermission(Permissions.ROOM_TYPES_UPDATE)
   @ApiOperation({ summary: 'update room type' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
