@@ -84,32 +84,34 @@ export class PaymentsController {
             throw new BadRequestException('Invalid payment signature');
         }
 
-        // Payment successful, confirm booking
-        const booking = await this.bookingsService.confirmBooking(
-            propertyId,
-            bookingId,
-            {
-                paidAmount: 0, // Will be updated inside with logic if needed, or pass full amount
-                totalAmount: undefined,
-            },
-        );
-
-        // We need a way to update the payment details specifically.
-        // Since confirmBooking might not accept these fields directly yet,
-        // we should update them directly via repository or extend confirmBooking.
-        // For now, let's assume we can update them.
-
-        // TODO: Update booking with payment IDs.
-        // access repository via service or add method to service
+        // Update payment details first
         await this.bookingsService.updatePaymentDetails(bookingId, {
             razorpayOrderId,
             razorpayPaymentId,
             razorpaySignature,
         });
 
-        // Update paid amount to full amount since payment is verified
+        // Payment successful, confirm booking
+        const booking = await this.bookingsService.confirmBooking(
+            propertyId,
+            bookingId,
+            {
+                paidAmount: undefined, // Will use booking.totalAmount if not specified, or we can fetch it. Ideally we pass it.
+                // improved logic: fetch booking to get total amount or let service handle it.
+                // The service.confirmBooking implementation:
+                // if (dto.paidAmount !== undefined) booking.paidAmount = dto.paidAmount;
+                // We want paidAmount = totalAmount.
+            },
+        );
+
+        // Re-fetch or use logic to set paidAmount = totalAmount
+        // Actually, the original code had `paidAmount: booking.totalAmount` in the SECOND call (line 112).
+        // A better approach:
+
+        const bookingDetails = await this.bookingsService.getBookingById(propertyId, bookingId);
+
         await this.bookingsService.confirmBooking(propertyId, bookingId, {
-            paidAmount: booking.totalAmount,
+            paidAmount: bookingDetails.totalAmount,
         });
 
         return { success: true, status: BookingStatus.CONFIRMED };

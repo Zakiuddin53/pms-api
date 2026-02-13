@@ -10,6 +10,8 @@ import { RoomType } from './inventory/room-types/room-type.entity';
 import { Room } from './inventory/rooms/room.entity';
 import { RoomStatus } from './common/enums/room-status.enum';
 import { Rate } from './inventory/rates/rate.entity';
+import { Booking } from './frontdesk/entity/booking.entity';
+import { BookingItem } from './frontdesk/entity/booking-item.entity';
 
 const DEFAULT_PASSWORD = 'password123';
 const RATE_DAYS = 60;
@@ -34,6 +36,8 @@ async function bootstrap() {
       await manager.createQueryBuilder().delete().from(entity).execute();
     };
 
+    await clear(BookingItem);
+    await clear(Booking);
     await clear(Rate);
     await clear(Room);
     await clear(RoomType);
@@ -41,7 +45,6 @@ async function bootstrap() {
     await clear(Propertie);
     await clear(User);
     console.log('Existing data cleared');
-
     const passwordHash = await argon2.hash(DEFAULT_PASSWORD);
     const [savedAdmin] = await manager.save(
       manager.create(User, [

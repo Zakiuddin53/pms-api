@@ -32,10 +32,10 @@ export class Rate {
   @JoinColumn()
   RoomType: RoomType;
 
-  @CreateDateColumn()
+  @Column({ type: 'date' })
   startDate: string;
 
-  @CreateDateColumn()
+  @Column({ type: 'date' })
   endDate: string;
 
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
