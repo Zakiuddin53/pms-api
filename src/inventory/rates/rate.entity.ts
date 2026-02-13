@@ -32,10 +32,10 @@ export class Rate {
   @JoinColumn()
   RoomType: RoomType;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'timestamp' })
   startDate: string;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'timestamp' })
   endDate: string;
 
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
