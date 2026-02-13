@@ -10,34 +10,40 @@ if (!(global as any).crypto) {
   (global as any).crypto = webcrypto;
 }
 const allowedOrigins = [
-  'http://localhost:3000', // dev
-  'https://arooba-pms.vercel.app', // production frontend
+  'https://arooba-pms.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:4000',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:4000',
   'https://backendinvestigate360.agency',
 ];
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const corsOrigins = process.env.CORS_ORIGINS;
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin || corsOrigins === '*') {
+      // In development, sometimes origin is undefined (e.g. from local docs or same-port requests)
+      if (!origin) {
         return callback(null, true);
       }
-      
-      const envOrigins = corsOrigins ? corsOrigins.split(',').map(o => o.trim()) : [];
-      const allAllowedOrigins = [...new Set([...allowedOrigins, ...envOrigins])];
-      
-      const isAllowed = allAllowedOrigins.some((allowedOrigin) => {
-        return origin === allowedOrigin || origin === allowedOrigin + '/';
+
+      const isAllowed = allowedOrigins.some((allowedOrigin) => {
+        // Clean both origin and allowedOrigin for comparison (remove trailing slashes)
+        const cleanOrigin = origin.replace(/\/$/, "");
+        const cleanAllowed = allowedOrigin.replace(/\/$/, "");
+        return cleanOrigin === cleanAllowed;
       });
 
       if (isAllowed) {
         callback(null, true);
       } else {
-        console.error(`CORS Error: Origin "${origin}" not allowed`);
-        callback(new Error('Not allowed by CORS'));
+        // Log the failure to help debug production issues
+        console.warn(`[CORS] Rejected origin: ${origin}`);
+        // Instead of error, we can return false to see if it prevents "crashing" 
+        // while still blocking the request.
+        callback(null, false);
       }
     },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     credentials: true,
   });
   app.useGlobalPipes(
