@@ -3,11 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Rate } from '../../inventory/rates/rate.entity';
 import { RoomType } from '../../inventory/room-types/room-type.entity';
 import { UserPropertyRole } from './user-property-role.entity';
+import { PropertyContact } from './property-contact.entity';
+import { PropertyAbout } from './property-about.entity';
 
 @Entity()
 export class Propertie {
@@ -27,9 +29,6 @@ export class Propertie {
   city?: string;
 
   @Column({ nullable: true })
-  description?: string;
-
-  @Column({ nullable: true })
   state?: string;
 
   @Column({ nullable: true, type: 'json' })
@@ -46,4 +45,10 @@ export class Propertie {
 
   @OneToMany(() => RoomType, (roomType) => roomType.Property)
   RoomTypes: RoomType[];
+
+  @OneToOne(() => PropertyContact, (c) => c.Property)
+  Contact: PropertyContact;
+
+  @OneToOne(() => PropertyAbout, (a) => a.Property)
+  PropertyAbout: PropertyAbout;
 }

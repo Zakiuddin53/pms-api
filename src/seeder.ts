@@ -12,6 +12,8 @@ import { RoomStatus } from './common/enums/room-status.enum';
 import { Rate } from './inventory/rates/rate.entity';
 import { Booking } from './frontdesk/entity/booking.entity';
 import { BookingItem } from './frontdesk/entity/booking-item.entity';
+import { PropertyContact } from './propertie/entities/property-contact.entity';
+import { PropertyAbout } from './propertie/entities/property-about.entity';
 
 const DEFAULT_PASSWORD = 'password123';
 const RATE_DAYS = 60;
@@ -42,6 +44,8 @@ async function bootstrap() {
     await clear(Room);
     await clear(RoomType);
     await clear(UserPropertyRole);
+    await clear(PropertyContact);
+    await clear(PropertyAbout);
     await clear(Propertie);
     await clear(User);
     console.log('Existing data cleared');
@@ -72,6 +76,36 @@ async function bootstrap() {
       ]),
     );
     console.log('Property created: Arooba Residency');
+    await manager.save(
+      manager.create(PropertyContact, {
+        Property: savedProperty,
+        phone: '+91 8956056855',
+        whatsapp: '+91 8956056855',
+        email: 'aroobahotell@gmail.com',
+        googleMapUrl: '',
+      }),
+    );
+    console.log('Property contact information added');
+    await manager.save(
+      manager.create(PropertyAbout, {
+        Property: savedProperty,
+        about: `Welcome to Arooba Residency, nestled in the heart of New Arady. Our hotel offers a serene and inviting ambiance, perfect for both leisure and business travelers. Step into our spacious rooms, meticulously designed to provide utmost comfort and relaxation. Each room features modern amenities, ensuring a seamless stay. Our dedicated staff is committed to delivering exceptional service, catering to your every need. Indulge in the delectable flavors of our on-site restaurant, serving a wide range of culinary delights. Conveniently situated near major attractions and transportation hubs, Arooba Residency promises a convenient and accessible location for your travels. Experience the perfect blend of comfort and convenience at Arooba Residency.`,
+        policies: `Terms and Conditions:
+
+Must Read Rules
+Primary Guest should be atleast 18 years of age.
+Passport, Aadhaar, Driving License and Govt. ID are accepted as ID proof(s)
+Pets are not allowed
+Guest Profile
+Unmarried couples allowed
+ID Proof Related
+Passport, Aadhaar, Driving License and Govt. ID are accepted as ID proof(s)
+Local ids not allowed
+
+Smoking/Alcohol consumption Rules`,
+      }),
+    );
+    console.log('Property about information and policies added');
 
     await manager.save(
       manager.create(UserPropertyRole, {

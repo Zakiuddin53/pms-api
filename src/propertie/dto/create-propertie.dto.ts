@@ -3,6 +3,7 @@ import {
   IsArray,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -26,8 +27,21 @@ export class CreatePropertieDto {
   city?: string;
 
   @IsOptional()
-  @IsString()
-  description?: string;
+  @IsObject()
+  contact?: {
+    phone?: string;
+    whatsapp?: string;
+    email?: string;
+    googleMapUrl?: string;
+  };
+
+  @IsOptional()
+  @IsObject()
+  about?: {
+    about?: string;
+    policies?: string;
+  };
+
 
   @IsOptional()
   @IsString()

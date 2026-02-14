@@ -16,6 +16,8 @@ import { UpdatePropertieDto } from './dto/update-propertie.dto';
 import { CreatePropertyAdminDto } from './dto/create-property-admin.dto';
 import { CreatePropertyStaffDto } from './dto/create-property-staff.dto';
 import { Propertie } from './entities/propertie.entity';
+import { PropertyContact } from './entities/property-contact.entity';
+import { PropertyAbout } from './entities/property-about.entity';
 import { propertiesPaginationConfig } from './propertie.pagination';
 
 @Injectable()
@@ -27,6 +29,10 @@ export class PropertieService {
     private readonly users: Repository<User>,
     @InjectRepository(UserPropertyRole)
     private readonly memberships: Repository<UserPropertyRole>,
+    @InjectRepository(PropertyContact)
+    private readonly propertyContacts: Repository<PropertyContact>,
+    @InjectRepository(PropertyAbout)
+    private readonly propertyAbouts: Repository<PropertyAbout>,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
@@ -45,22 +51,46 @@ export class PropertieService {
         throw new BadRequestException('Failed to upload property images');
       }
     }
-
     const property = this.properties.create({
       name: createPropertieDto.name,
       address: createPropertieDto.address,
       pinCode: createPropertieDto.pinCode,
       city: createPropertieDto.city,
-      description: createPropertieDto.description,
       state: createPropertieDto.state,
       imageUrls: uploadedImageUrls ?? createPropertieDto.imageUrls ?? null,
       rating: createPropertieDto.rating ?? 0,
     });
 
     try {
-      return await this.properties.save(property);
-    } catch {
-      throw new BadRequestException('Failed to create property');
+      const savedProperty = await this.properties.save(property);
+      if (createPropertieDto.contact) {
+        const contact = this.propertyContacts.create({
+          Property: savedProperty,
+          phone: createPropertieDto.contact.phone,
+          whatsapp: createPropertieDto.contact.whatsapp,
+          email: createPropertieDto.contact.email,
+          googleMapUrl: createPropertieDto.contact.googleMapUrl,
+        });
+        await this.propertyContacts.save(contact);
+      }
+
+      if (createPropertieDto.about) {
+        const about = this.propertyAbouts.create({
+          Property: savedProperty,
+          about: createPropertieDto.about.about,
+          policies: createPropertieDto.about.policies,
+        });
+        await this.propertyAbouts.save(about);
+      }
+
+      return await this.properties.findOne({
+        where: { id: savedProperty.id },
+        relations: ['Contact', 'PropertyAbout'],
+      });
+    } catch (error) {
+      throw new BadRequestException(
+        'Failed to create property: ' + error.message,
+      );
     }
   }
 
@@ -68,6 +98,7 @@ export class PropertieService {
     return paginate(query, this.properties, {
       ...propertiesPaginationConfig,
       defaultSortBy: [['name', 'ASC']],
+      relations: ['Contact', 'PropertyAbout'],
     });
   }
 
@@ -78,6 +109,8 @@ export class PropertieService {
         RoomTypes: {
           Rates: true,
         },
+        Contact: true,
+        PropertyAbout: true,
       },
     });
   }
@@ -87,50 +120,88 @@ export class PropertieService {
     updatePropertieDto: UpdatePropertieDto,
     files?: Express.Multer.File[],
   ) {
-    const property = await this.properties.findOne({ where: { id } });
-    if (!property) {
-      throw new NotFoundException('Property not found');
-    }
+    let uploadedImageUrls: string[] = [];
 
-    let uploadedImageUrls: string[] | null = null;
     if (files && files.length > 0) {
-      try {
-        uploadedImageUrls = await this.cloudinaryService.uploadImages(
-          files,
-          'properties',
-        );
-      } catch {
-        throw new BadRequestException('Failed to upload property images');
-      }
+      uploadedImageUrls = await this.cloudinaryService.uploadImages(
+        files,
+        'properties',
+      );
     }
 
-    if (updatePropertieDto.name !== undefined) {
-      property.name = updatePropertieDto.name;
-    }
-    if (updatePropertieDto.address !== undefined) {
-      property.address = updatePropertieDto.address;
-    }
-    if (updatePropertieDto.pinCode !== undefined) {
-      property.pinCode = updatePropertieDto.pinCode;
-    }
-    if (updatePropertieDto.city !== undefined) {
-      property.city = updatePropertieDto.city;
-    }
-    if (updatePropertieDto.description !== undefined) {
-      property.description = updatePropertieDto.description;
-    }
-    if (updatePropertieDto.state !== undefined) {
-      property.state = updatePropertieDto.state;
-    }
-    if (uploadedImageUrls) {
-      property.imageUrls = uploadedImageUrls;
-    } else if (updatePropertieDto.imageUrls !== undefined) {
-      property.imageUrls = updatePropertieDto.imageUrls;
-    }
-    if (updatePropertieDto.rating !== undefined) {
-      property.rating = updatePropertieDto.rating;
-    }
-    return await this.properties.save(property);
+    const updatedProperty = await this.properties.manager.transaction(
+      async (manager) => {
+        const property = await manager.findOne(Propertie, {
+          where: { id },
+          relations: ['Contact', 'PropertyAbout'],
+        });
+
+        if (!property) {
+          throw new NotFoundException(`Property with ID ${id} not found`);
+        }
+
+        const { contact, about, imageUrls, ...propertyFields } =
+          updatePropertieDto;
+
+        Object.keys(propertyFields).forEach((key) => {
+          if (propertyFields[key] !== undefined) {
+            property[key] = propertyFields[key];
+          }
+        });
+
+        if (uploadedImageUrls.length > 0) {
+          property.imageUrls = uploadedImageUrls;
+        } else if (imageUrls !== undefined) {
+          property.imageUrls = imageUrls;
+        }
+
+        if (contact !== undefined) {
+          if (property.Contact) {
+            Object.keys(contact).forEach((key) => {
+              if (contact[key] !== undefined) {
+                property.Contact[key] = contact[key];
+              }
+            });
+            await manager.save(PropertyContact, property.Contact);
+          } else {
+            const newContact = manager.create(PropertyContact, {
+              ...contact,
+              Property: property,
+            });
+            property.Contact = await manager.save(PropertyContact, newContact);
+          }
+        }
+
+        if (about !== undefined) {
+          if (property.PropertyAbout) {
+            Object.keys(about).forEach((key) => {
+              if (about[key] !== undefined) {
+                property.PropertyAbout[key] = about[key];
+              }
+            });
+            await manager.save(PropertyAbout, property.PropertyAbout);
+          } else {
+            const newAbout = manager.create(PropertyAbout, {
+              ...about,
+              Property: property,
+            });
+            property.PropertyAbout = await manager.save(
+              PropertyAbout,
+              newAbout,
+            );
+          }
+        }
+
+        const savedProperty = await manager.save(Propertie, property);
+
+        return manager.findOne(Propertie, {
+          where: { id: savedProperty.id },
+          relations: ['Contact', 'PropertyAbout'],
+        });
+      },
+    );
+
+    return updatedProperty;
   }
 
   async createPropertyAdmin(propertyId: number, dto: CreatePropertyAdminDto) {

@@ -38,4 +38,12 @@ export class CloudinaryService {
   ): Promise<string[]> {
     return Promise.all(files.map((file) => this.uploadImage(file, folder)));
   }
+
+  async deleteImage(publicId: string): Promise<void> {
+    await cloudinary.uploader.destroy(publicId);
+  }
+
+  async deleteImages(publicIds: string[]): Promise<void> {
+    await Promise.all(publicIds.map((id) => this.deleteImage(id)));
+  }
 }
