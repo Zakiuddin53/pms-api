@@ -97,6 +97,7 @@ export class BookingsService {
   }
 
   async createBooking(propertyId: number, dto: HoldBookingDto) {
+    console.log(`[CreateBooking] Start for Property ${propertyId}, RoomType ${dto.roomTypeId}`, dto);
     this.assertValidDateRange(dto.checkIn, dto.checkOut);
     if (dto.roomsCount < 1) {
       throw new BadRequestException('Rooms count must be at least 1');
@@ -107,6 +108,7 @@ export class BookingsService {
     });
 
     if (!roomType) {
+      console.warn(`[CreateBooking] Room type ${dto.roomTypeId} not found for property ${propertyId}`);
       throw new BadRequestException('Room type not found for property');
     }
 
@@ -118,6 +120,7 @@ export class BookingsService {
     );
 
     if (available < dto.roomsCount) {
+      console.warn(`[CreateBooking] Not enough availability for RoomType ${dto.roomTypeId}: available=${available}, requested=${dto.roomsCount}`);
       throw new BadRequestException('Not enough availability');
     }
 
@@ -127,7 +130,11 @@ export class BookingsService {
       dto.checkIn,
       dto.checkOut,
     );
-    const totalAmount = this.sumRateMap(pricePerNight) * dto.roomsCount;
+    const baseAmount = this.sumRateMap(pricePerNight) * dto.roomsCount;
+    const gstRate = 0.12; // 12% GST to match frontend
+    const totalAmount = Math.round(baseAmount * (1 + gstRate));
+    
+    console.log(`[CreateBooking] Pricing: base=${baseAmount}, totalWithGST=${totalAmount}`);
 
     let customer = await this.customers.findOne({
       where: [{ email: dto.customer.email }, { phone: dto.customer.phone }],
@@ -223,8 +230,11 @@ export class BookingsService {
     }
 
     await this.bookings.save(booking);
-    await this.bookings.save(booking);
     return booking;
+  }
+
+  async updateBookingRazorpayOrderId(bookingId: number, razorpayOrderId: string) {
+    return this.bookings.update(bookingId, { razorpayOrderId });
   }
 
   async updatePaymentDetails(
@@ -528,8 +538,10 @@ export class BookingsService {
     checkOut: string,
   ) {
     const dates = this.expandDateRange(checkIn, checkOut);
+    console.log(`[requireRateMap] Expanded dates:`, dates);
     const lastNight = dates[dates.length - 1];
     if (!lastNight) {
+      console.error(`[requireRateMap] No dates generated for ${checkIn} to ${checkOut}`);
       throw new BadRequestException('Invalid stay dates');
     }
 
@@ -540,13 +552,37 @@ export class BookingsService {
       .andWhere('rate.startDate <= :lastNight', { lastNight })
       .andWhere('rate.endDate >= :checkIn', { checkIn })
       .getMany();
+    
+    console.log(`[requireRateMap] Found ${rates.length} rate entries for stay.`);
 
     const perNight: Record<string, number> = {};
     for (const date of dates) {
-      const rate = rates.find(
-        (entry) => entry.startDate <= date && entry.endDate >= date,
-      );
+      console.log(`[requireRateMap] Checking date: ${date}`);
+      const rate = rates.find((entry) => {
+        // Robust conversion to YYYY-MM-DD
+        const formatDate = (val: any) => {
+          if (!val) return '';
+          const d = new Date(val);
+          if (isNaN(d.getTime())) return String(val).slice(0, 10);
+          
+          // Use local components to avoid UTC shift if the DB date was intended as local
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        };
+
+        const start = formatDate(entry.startDate);
+        const end = formatDate(entry.endDate);
+        
+        const match = start <= date && end >= date;
+        if (match) {
+           console.log(`[requireRateMap] Found match for ${date}: price=${entry.price} (start=${start}, end=${end})`);
+        }
+        return match;
+      });
       if (!rate) {
+        console.warn(`[requireRateMap] Missing rate for date: ${date}. Rates found:`, rates.map(r => ({ start: r.startDate, end: r.endDate })));
         throw new BadRequestException('Rates are missing for selected dates');
       }
       perNight[date] = Number(rate.price);
@@ -564,7 +600,8 @@ export class BookingsService {
       cursor < end;
       cursor.setDate(cursor.getDate() + 1)
     ) {
-      dates.push(cursor.toISOString().slice(0, 10));
+      const dateStr = cursor.toISOString().slice(0, 10);
+      dates.push(dateStr);
     }
 
     return dates;

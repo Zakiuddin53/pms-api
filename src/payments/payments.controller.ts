@@ -43,14 +43,14 @@ export class PaymentsController {
             `bk_${booking.id}`,
         );
 
-        // Ideally, save the order_id to the booking here for tracking
-        // await this.bookingsService.updateBookingRazorpayOrderId(booking.id, order.id);
+        // Save order ID for tracking and webhook verification
+        await this.bookingsService.updateBookingRazorpayOrderId(booking.id, order.id);
 
         return {
             orderId: order.id,
             amount: order.amount,
             currency: order.currency,
-            keyId: process.env.RAZORPAY_KEY_ID, // Send Key ID to frontend
+            keyId: process.env.RAZORPAY_KEY_ID,
         };
     }
 
@@ -74,6 +74,11 @@ export class PaymentsController {
             razorpaySignature,
         } = body;
 
+        console.log(`[PaymentVerify] Start verification for Booking ${bookingId}`, { 
+            razorpayOrderId, 
+            razorpayPaymentId 
+        });
+
         const isValid = this.paymentsService.verifySignature(
             razorpayOrderId,
             razorpayPaymentId,
@@ -81,38 +86,41 @@ export class PaymentsController {
         );
 
         if (!isValid) {
+            console.error(`[PaymentVerify] Invalid signature for Booking ${bookingId}`);
             throw new BadRequestException('Invalid payment signature');
         }
 
-        // Update payment details first
+        // 1. Fetch current booking to get totalAmount
+        const booking = await this.bookingsService.getBookingById(propertyId, bookingId);
+        console.log(`[PaymentVerify] Booking ${bookingId} current status: ${booking.status}`);
+
+        // 2. If already confirmed (e.g. via webhook), return immediately
+        if (booking.status === BookingStatus.CONFIRMED) {
+            console.log(`[PaymentVerify] Booking ${bookingId} already confirmed. Skipping manual confirmation.`);
+            return { success: true, status: BookingStatus.CONFIRMED };
+        }
+
+        // 3. Update payment details
         await this.bookingsService.updatePaymentDetails(bookingId, {
             razorpayOrderId,
             razorpayPaymentId,
             razorpaySignature,
         });
 
-        // Payment successful, confirm booking
-        const booking = await this.bookingsService.confirmBooking(
-            propertyId,
-            bookingId,
-            {
-                paidAmount: undefined, // Will use booking.totalAmount if not specified, or we can fetch it. Ideally we pass it.
-                // improved logic: fetch booking to get total amount or let service handle it.
-                // The service.confirmBooking implementation:
-                // if (dto.paidAmount !== undefined) booking.paidAmount = dto.paidAmount;
-                // We want paidAmount = totalAmount.
-            },
-        );
-
-        // Re-fetch or use logic to set paidAmount = totalAmount
-        // Actually, the original code had `paidAmount: booking.totalAmount` in the SECOND call (line 112).
-        // A better approach:
-
-        const bookingDetails = await this.bookingsService.getBookingById(propertyId, bookingId);
-
-        await this.bookingsService.confirmBooking(propertyId, bookingId, {
-            paidAmount: bookingDetails.totalAmount,
-        });
+        // 4. Confirm booking in a SINGLE call with correct paidAmount
+        try {
+            await this.bookingsService.confirmBooking(
+                propertyId,
+                bookingId,
+                {
+                    paidAmount: booking.totalAmount,
+                },
+            );
+            console.log(`[PaymentVerify] Booking ${bookingId} confirmed successfully.`);
+        } catch (error) {
+            console.error(`[PaymentVerify] Confirmation failed for Booking ${bookingId}:`, error.message);
+            throw error;
+        }
 
         return { success: true, status: BookingStatus.CONFIRMED };
     }
