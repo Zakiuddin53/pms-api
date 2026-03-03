@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { GlobalRole } from '../enums/global-role.enum';
-import { PropertyRole } from '../enums/property-role.enum';
-import type { JwtPayload } from '../types/auth.types';
+import { GlobalRole } from '@/common/enums/role.enum';
+import { PropertyRole } from '@/common/enums/role.enum';
+import type { JwtPayload } from '@/common/types/auth.types';
 
 const getJwtSecret = (): string => {
   const secret = process.env.JWT_SECRET;
@@ -18,7 +18,7 @@ const isGlobalRole = (role: unknown): role is GlobalRole =>
 const isPropertyRole = (role: unknown): role is PropertyRole =>
   role === PropertyRole.SUPER_ADMIN ||
   role === PropertyRole.PROPERTY_ADMIN ||
-  role === PropertyRole.STAFF;
+  role === PropertyRole.PROPERTY_STAFF;
 
 export const authenticateJWT = (
   req: Request,

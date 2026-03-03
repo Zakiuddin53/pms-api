@@ -18,7 +18,9 @@ import { Permissions } from '../../common/permissions/permissions';
 import { CreateRateDto } from './dto/create-rate.dto';
 import { UpdateRateDto } from './dto/update-rate.dto';
 import { RatesService } from './rates.service';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Inventory - Rates')
 @Controller('properties/:propertyId/rates')
 export class RatesController {
   constructor(private readonly ratesService: RatesService) {}

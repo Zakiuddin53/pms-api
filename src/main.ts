@@ -18,7 +18,8 @@ const allowedOrigins = [
   'https://backendinvestigate360.agency',
 ];
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
+
   app.enableCors({
     origin: (origin, callback) => {
       // In development, sometimes origin is undefined (e.g. from local docs or same-port requests)
@@ -28,8 +29,8 @@ async function bootstrap() {
 
       const isAllowed = allowedOrigins.some((allowedOrigin) => {
         // Clean both origin and allowedOrigin for comparison (remove trailing slashes)
-        const cleanOrigin = origin.replace(/\/$/, "");
-        const cleanAllowed = allowedOrigin.replace(/\/$/, "");
+        const cleanOrigin = origin.replace(/\/$/, '');
+        const cleanAllowed = allowedOrigin.replace(/\/$/, '');
         return cleanOrigin === cleanAllowed;
       });
 
@@ -38,12 +39,12 @@ async function bootstrap() {
       } else {
         // Log the failure to help debug production issues
         console.warn(`[CORS] Rejected origin: ${origin}`);
-        // Instead of error, we can return false to see if it prevents "crashing" 
+        // Instead of error, we can return false to see if it prevents "crashing"
         // while still blocking the request.
         callback(null, false);
       }
     },
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
   app.useGlobalPipes(

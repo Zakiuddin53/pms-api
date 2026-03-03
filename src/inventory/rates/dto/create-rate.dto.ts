@@ -1,17 +1,22 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsInt, IsNumber, Min } from 'class-validator';
 
 export class CreateRateDto {
   @IsInt()
   @Min(1)
+  @ApiProperty()
   roomTypeId!: number;
 
   @IsDateString()
-  startDate!: string;
+  @ApiProperty()
+  startDate: string;
 
   @IsDateString()
-  endDate!: string;
+  @ApiProperty()
+  endDate: string;
 
   @IsNumber()
   @Min(0)
-  price!: number;
+  @ApiProperty()
+  price: number;
 }

@@ -18,8 +18,9 @@ import { Permissions } from '../../common/permissions/permissions';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { RoomsService } from './rooms.service';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Inventory - Rooms')
 @Controller('properties/:propertyId/rooms')
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
@@ -35,8 +36,8 @@ export class RoomsController {
     return this.roomsService.create(Number(propertyId), body);
   }
 
-  // @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
-  // @RequirePermission(Permissions.ROOMS_READ)
+  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
+  @RequirePermission(Permissions.ROOMS_READ)
   @Get()
   async list(
     @Param('propertyId') propertyId: string,
@@ -45,8 +46,8 @@ export class RoomsController {
     return this.roomsService.list(Number(propertyId), query);
   }
 
-  // @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
-  // @RequirePermission(Permissions.ROOMS_READ)
+  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
+  @RequirePermission(Permissions.ROOMS_READ)
   @Get(':roomId')
   async getById(
     @Param('propertyId') propertyId: string,

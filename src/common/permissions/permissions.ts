@@ -1,4 +1,4 @@
-import { PropertyRole } from '../enums/property-role.enum';
+import { PropertyRole } from '@/common/enums/role.enum';
 
 export const Permissions = {
   PROPERTIES_CREATE: 'properties:create',
@@ -27,6 +27,11 @@ export const Permissions = {
   BOOKINGS_HOLD: 'bookings:hold',
   BOOKINGS_CONFIRM: 'bookings:confirm',
   BOOKINGS_READ: 'bookings:read',
+  BOOKINGS_CANCEL: 'bookings:cancel',
+  BOOKINGS_CHECKIN: 'bookings:checkin',
+  BOOKINGS_CHECKOUT: 'bookings:checkout',
+  PAYMENTS_CREATE: 'payments:create',
+  PAYMENTS_REFUND: 'payments:refund',
 } as const;
 
 export type Permission = (typeof Permissions)[keyof typeof Permissions];
@@ -59,6 +64,11 @@ export const RolePermissions: Record<PropertyRole, Permission[]> = {
     Permissions.BOOKINGS_HOLD,
     Permissions.BOOKINGS_CONFIRM,
     Permissions.BOOKINGS_READ,
+    Permissions.BOOKINGS_CANCEL,
+    Permissions.BOOKINGS_CHECKIN,
+    Permissions.BOOKINGS_CHECKOUT,
+    Permissions.PAYMENTS_CREATE,
+    Permissions.PAYMENTS_REFUND,
   ],
   [PropertyRole.PROPERTY_ADMIN]: [
     Permissions.PROPERTIES_CREATE,
@@ -86,8 +96,13 @@ export const RolePermissions: Record<PropertyRole, Permission[]> = {
     Permissions.BOOKINGS_HOLD,
     Permissions.BOOKINGS_CONFIRM,
     Permissions.BOOKINGS_READ,
+    Permissions.BOOKINGS_CANCEL,
+    Permissions.BOOKINGS_CHECKIN,
+    Permissions.BOOKINGS_CHECKOUT,
+    Permissions.PAYMENTS_CREATE,
+    Permissions.PAYMENTS_REFUND,
   ],
-  [PropertyRole.STAFF]: [
+  [PropertyRole.PROPERTY_STAFF]: [
     Permissions.ROOM_TYPES_READ,
     Permissions.ROOMS_READ,
     Permissions.ROOM_BLOCKS_READ,
@@ -95,5 +110,8 @@ export const RolePermissions: Record<PropertyRole, Permission[]> = {
     Permissions.AVAILABILITY_READ,
     Permissions.BOOKINGS_HOLD,
     Permissions.BOOKINGS_READ,
+    Permissions.BOOKINGS_CHECKIN,
+    Permissions.BOOKINGS_CHECKOUT,
+    Permissions.PAYMENTS_CREATE,
   ],
 };

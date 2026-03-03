@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
 import { RoomStatus } from '../../common/enums/room-status.enum';
-import { RoomType } from '../room-types/room-type.entity';
+import { RoomType } from '../room-types/entity/room-type.entity';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { Room } from './room.entity';
@@ -48,11 +48,15 @@ export class RoomsService {
         roomNumber: [FilterOperator.ILIKE],
       },
       where: { propertyId },
+      relations: { roomType: true },
     });
   }
 
   async getById(propertyId: number, id: number) {
-    const room = await this.rooms.findOne({ where: { id, propertyId } });
+    const room = await this.rooms.findOne({
+      where: { id, propertyId },
+      relations: { roomType: true },
+    });
     if (!room) {
       throw new NotFoundException('Room not found');
     }
@@ -74,6 +78,7 @@ export class RoomsService {
     const updated = this.rooms.merge(room, {
       roomNumber: dto.roomNumber ?? room.roomNumber,
       status: dto.status ?? room.status,
+      roomTypeId: dto.roomTypeId ?? room.roomTypeId,
     });
     return this.rooms.save(updated);
   }

@@ -1,85 +1,282 @@
 import {
-    Injectable,
-    InternalServerErrorException,
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Razorpay from 'razorpay';
 import * as crypto from 'crypto';
+import { BookingsService } from '../bookings/service/bookings.service';
+import { VerifyPaymentDto } from './dto/verify-payment.dto';
+import { BookingStatus } from '@/common/enums/booking.enum';
 
 @Injectable()
 export class PaymentsService {
-    private razorpay: Razorpay;
+  private readonly logger = new Logger(PaymentsService.name);
+  private readonly razorpay: Razorpay;
+  private readonly keySecret: string;
+  private readonly webhookSecret: string;
 
-    constructor(private readonly configService: ConfigService) {
-        const key_id = this.configService.get<string>('RAZORPAY_KEY_ID');
-        const key_secret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly bookingsService: BookingsService,
+  ) {
+    const keyId = this.configService.get<string>('RAZORPAY_KEY_ID');
+    const keySecret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
+    const webhookSecret = this.configService.get<string>(
+      'RAZORPAY_WEBHOOK_SECRET',
+    );
 
-        if (!key_id || !key_secret) {
-            console.warn('Razorpay keys are missing in configuration');
-        }
-
-        this.razorpay = new Razorpay({
-            key_id: key_id || 'rzp_test_placeholder', // Fallback for dev safety
-            key_secret: key_secret || 'secret_placeholder',
-        });
+    if (!keyId || !keySecret) {
+      throw new InternalServerErrorException(
+        'RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET must be configured',
+      );
     }
 
-    async createOrder(amount: number, currency: string = 'INR', receipt: string) {
-        try {
-            const options = {
-                amount: Math.round(amount * 100), // Amount in paise
-                currency,
-                receipt,
-            };
-            const order = await this.razorpay.orders.create(options);
-            return order;
-        } catch (error) {
-            console.error('Razorpay Order Creation Failed:', error);
-            throw new InternalServerErrorException('Failed to create payment order');
-        }
+    this.keySecret = keySecret;
+    this.webhookSecret = webhookSecret ?? '';
+
+    this.razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+  }
+
+  async createOrder(propertyId: number, bookingId: number) {
+    const booking = await this.bookingsService.getBookingById(
+      propertyId,
+      bookingId,
+    );
+
+    if (booking.status !== BookingStatus.HOLD) {
+      throw new BadRequestException(
+        `Booking is not eligible for payment (status: ${booking.status})`,
+      );
     }
 
-    verifySignature(
-        orderId: string,
-        paymentId: string,
-        signature: string,
-    ): boolean {
-        const key_secret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
-        if (!key_secret) {
-            throw new InternalServerErrorException('Razorpay secret missing');
-        }
-
-        const hmac = crypto.createHmac('sha256', key_secret);
-        hmac.update(orderId + '|' + paymentId);
-        const generatedSignature = hmac.digest('hex');
-
-        return generatedSignature === signature;
+    if (booking.holdExpiresAt && booking.holdExpiresAt <= new Date()) {
+      throw new BadRequestException('Booking hold has expired');
     }
 
-    async refundPayment(paymentId: string, amount?: number) {
-        try {
-            const options: any = {};
-            if (amount) {
-                options.amount = Math.round(amount * 100); // Amount in paise
-            }
-            const refund = await this.razorpay.payments.refund(paymentId, options);
-            return refund;
-        } catch (error) {
-            console.error('Razorpay Refund Failed:', error);
-            throw new InternalServerErrorException('Failed to process refund');
-        }
+    const receipt = `bk_${booking.id}`;
+
+    let order: any;
+    try {
+      order = await this.razorpay.orders.create({
+        amount: booking.totalAmount,
+        currency: 'INR',
+        receipt,
+        notes: { bookingCode: booking.bookingCode },
+      });
+    } catch (err) {
+      this.logger.error('Razorpay order creation failed', err);
+      throw new InternalServerErrorException(
+        'Failed to create payment order with Razorpay',
+      );
     }
 
-    verifyWebhookSignature(
-        webhookBody: string,
-        webhookSignature: string,
-        webhookSecret: string,
-    ): boolean {
-        // Razorpay SDK provides validateWebhookSignature, but we can also do it manually for transparency
-        return Razorpay.validateWebhookSignature(
-            webhookBody,
-            webhookSignature,
-            webhookSecret,
+    await this.bookingsService.createPendingPaymentTransaction(
+      bookingId,
+      order.id as string,
+      Number(booking.totalAmount),
+    );
+
+    this.logger.log(
+      `Razorpay order ${order.id} created for booking ${booking.bookingCode}`,
+    );
+
+    return {
+      orderId: order.id as string,
+      amount: booking.totalAmount,
+      currency: 'INR',
+      keyId: this.configService.get<string>('RAZORPAY_KEY_ID')!,
+    };
+  }
+
+  async verifyPayment(
+    propertyId: number,
+    dto: VerifyPaymentDto,
+  ): Promise<{ success: boolean; bookingCode: string; status: BookingStatus }> {
+    const { bookingId, razorpayOrderId, razorpayPaymentId, razorpaySignature } =
+      dto;
+
+    if (
+      !this.verifySignature(
+        razorpayOrderId,
+        razorpayPaymentId,
+        razorpaySignature,
+      )
+    ) {
+      throw new BadRequestException('Invalid payment signature');
+    }
+
+    const booking = await this.bookingsService.getBookingById(
+      propertyId,
+      bookingId,
+    );
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
+
+    if (booking.status === BookingStatus.CONFIRMED) {
+      return {
+        success: true,
+        bookingCode: booking.bookingCode,
+        status: BookingStatus.CONFIRMED,
+      };
+    }
+
+    await this.bookingsService.savePaymentTransaction({
+      bookingId,
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature,
+      amount: Number(booking.totalAmount),
+    });
+
+    const confirmed = await this.bookingsService.markConfirmed(
+      bookingId,
+      Number(booking.totalAmount),
+    );
+
+    this.logger.log(
+      `Payment verified and booking ${confirmed.bookingCode} confirmed`,
+    );
+
+    return {
+      success: true,
+      bookingCode: confirmed.bookingCode,
+      status: BookingStatus.CONFIRMED,
+    };
+  }
+
+  async handleWebhook(rawBody: string, signature: string): Promise<void> {
+    if (!this.webhookSecret) {
+      this.logger.warn(
+        'Webhook received but RAZORPAY_WEBHOOK_SECRET is not configured',
+      );
+      return;
+    }
+
+    const isValid = Razorpay.validateWebhookSignature(
+      rawBody,
+      signature,
+      this.webhookSecret,
+    );
+
+    if (!isValid) {
+      this.logger.warn('Razorpay webhook signature validation failed');
+      return;
+    }
+
+    let event: any;
+    try {
+      event = JSON.parse(rawBody);
+    } catch {
+      this.logger.error('Failed to parse webhook body');
+      return;
+    }
+
+    if (event?.event === 'payment.captured') {
+      const payment = event?.payload?.payment?.entity as any;
+      const orderId: string | undefined = payment?.order_id;
+      const paymentId: string | undefined = payment?.id;
+      const amountInPaise: number = payment?.amount ?? 0;
+
+      if (!orderId || !paymentId) {
+        this.logger.warn(
+          'Webhook payment.captured missing orderId or paymentId',
         );
+        return;
+      }
+
+      const booking =
+        await this.bookingsService.getBookingByRazorpayOrderId(orderId);
+
+      if (!booking) {
+        this.logger.warn(`Webhook: no booking found for orderId=${orderId}`);
+        return;
+      }
+
+      if (booking.status === BookingStatus.CONFIRMED) {
+        return;
+      }
+
+      try {
+        await this.bookingsService.savePaymentTransaction({
+          bookingId: booking.id,
+          razorpayOrderId: orderId,
+          razorpayPaymentId: paymentId,
+          razorpaySignature: 'webhook_verified',
+          amount: amountInPaise / 100,
+        });
+
+        await this.bookingsService.markConfirmed(
+          booking.id,
+          amountInPaise / 100,
+        );
+
+        this.logger.log(
+          `Booking ${booking.bookingCode} confirmed via webhook (orderId=${orderId})`,
+        );
+      } catch (err) {
+        this.logger.error(
+          `Webhook: failed to confirm booking ${booking.id}`,
+          err,
+        );
+      }
     }
+  }
+
+  async refundPayment(
+    propertyId: number,
+    bookingId: number,
+    amount?: number,
+  ): Promise<{ success: boolean; refundId: string }> {
+    const booking = await this.bookingsService.getBookingById(
+      propertyId,
+      bookingId,
+    );
+
+    const tx =
+      await this.bookingsService.getLatestCapturedPaymentTransaction(bookingId);
+
+    if (!tx?.razorpayPaymentId) {
+      throw new BadRequestException(
+        'No captured payment found for this booking',
+      );
+    }
+
+    const options: any = {};
+
+    let refund: any;
+    try {
+      refund = await this.razorpay.payments.refund(
+        tx.razorpayPaymentId,
+        options,
+      );
+    } catch (err) {
+      this.logger.error('Razorpay refund failed', err);
+      throw new InternalServerErrorException('Failed to process refund');
+    }
+
+    this.logger.log(
+      `Refund ${refund.id} initiated for booking ${booking.bookingCode}`,
+    );
+
+    return { success: true, refundId: refund.id as string };
+  }
+
+  private verifySignature(
+    orderId: string,
+    paymentId: string,
+    signature: string,
+  ): boolean {
+    const generated = crypto
+      .createHmac('sha256', this.keySecret)
+      .update(`${orderId}|${paymentId}`)
+      .digest('hex');
+
+    return generated === signature;
+  }
 }

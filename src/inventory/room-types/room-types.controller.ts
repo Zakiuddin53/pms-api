@@ -11,7 +11,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
 
 import { Paginate } from 'nestjs-paginate';
@@ -24,8 +24,8 @@ import { Permissions } from '../../common/permissions/permissions';
 import { CreateRoomTypeDto } from './dto/create-room-type.dto';
 import { UpdateRoomTypeDto } from './dto/update-room-type.dto';
 import { RoomTypesService } from './room-types.service';
-import { ApiOperation } from '@nestjs/swagger';
 
+@ApiTags('Inventory - Room Types')
 @Controller('properties/:propertyId/room-types')
 export class RoomTypesController {
   constructor(private readonly roomTypesService: RoomTypesService) {}
@@ -48,8 +48,8 @@ export class RoomTypesController {
     return this.roomTypesService.create(Number(propertyId), body, files);
   }
 
-  // @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
-  // @RequirePermission(Permissions.ROOM_TYPES_READ)
+  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
+  @RequirePermission(Permissions.ROOM_TYPES_READ)
   @Get()
   async list(
     @Param('propertyId') propertyId: string,
@@ -58,8 +58,8 @@ export class RoomTypesController {
     return this.roomTypesService.list(Number(propertyId), query);
   }
 
-  // @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
-  // @RequirePermission(Permissions.ROOM_TYPES_READ)
+  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
+  @RequirePermission(Permissions.ROOM_TYPES_READ)
   @Get(':roomTypeId')
   async getById(
     @Param('propertyId') propertyId: string,
@@ -71,9 +71,9 @@ export class RoomTypesController {
     );
   }
 
-  // @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
-  // @RequirePermission(Permissions.ROOM_TYPES_UPDATE)
-  @ApiOperation({ summary: 'update room type' })
+  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
+  @RequirePermission(Permissions.ROOM_TYPES_UPDATE)
+  @ApiOperation({ summary: 'Update a room type' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FilesInterceptor('images', 10, {

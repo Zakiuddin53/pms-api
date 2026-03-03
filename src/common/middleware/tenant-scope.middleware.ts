@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { GlobalRole } from '../enums/global-role.enum';
+import { GlobalRole } from '@/common/enums/role.enum';
 
 export const tenantScope = (
   req: Request,

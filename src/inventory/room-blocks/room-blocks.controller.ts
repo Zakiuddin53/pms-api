@@ -18,8 +18,10 @@ import { Permissions } from '../../common/permissions/permissions';
 import { CreateRoomBlockDto } from './dto/create-room-block.dto';
 import { UpdateRoomBlockDto } from './dto/update-room-block.dto';
 import { RoomBlocksService } from './room-blocks.service';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@Controller('properties/:propertyId/blocks')
+@ApiTags('Inventory - Room Blocks')
+@Controller('properties/:propertyId/room-blocks')
 export class RoomBlocksController {
   constructor(private readonly roomBlocksService: RoomBlocksService) {}
 

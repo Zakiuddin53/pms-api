@@ -1,0 +1,8 @@
+export enum PolicyType {
+  CANCELLATION = 'CANCELLATION',
+  CHECK_IN = 'CHECK_IN',
+  CHECK_OUT = 'CHECK_OUT',
+  CHILD = 'CHILD',
+  PET = 'PET',
+  PAYMENT = 'PAYMENT',
+}

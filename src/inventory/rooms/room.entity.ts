@@ -6,8 +6,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { RoomStatus } from '../../common/enums/room-status.enum';
-import { Propertie } from '../../propertie/entities/propertie.entity';
-import { RoomType } from '../room-types/room-type.entity';
+import { RoomType } from '../room-types/entity/room-type.entity';
+import { Property } from '@/property/entities/property.entity';
 
 @Entity()
 export class Room {
@@ -16,12 +16,6 @@ export class Room {
 
   @Column()
   propertyId: number;
-
-  @ManyToOne(() => Propertie, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  property: Propertie;
 
   @Column()
   roomTypeId: number;
@@ -42,4 +36,10 @@ export class Room {
     default: RoomStatus.ACTIVE,
   })
   status: RoomStatus;
+
+  @ManyToOne(() => Property, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  Property: Property;
 }

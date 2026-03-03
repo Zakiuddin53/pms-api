@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
 import { Room } from '../rooms/room.entity';
-import { RoomType } from '../room-types/room-type.entity';
+import { RoomType } from '../room-types/entity/room-type.entity';
 import { CreateRoomBlockDto } from './dto/create-room-block.dto';
 import { UpdateRoomBlockDto } from './dto/update-room-block.dto';
 import { RoomBlock } from './room-block.entity';
@@ -81,34 +81,28 @@ export class RoomBlocksService {
   async update(propertyId: number, id: number, dto: UpdateRoomBlockDto) {
     const block = await this.getById(propertyId, id);
 
-    if (dto.roomId || dto.roomTypeId) {
-      if (
-        !dto.roomId &&
-        !dto.roomTypeId &&
-        !block.roomId &&
-        !block.roomTypeId
-      ) {
-        throw new BadRequestException(
-          'Either roomId or roomTypeId is required',
-        );
-      }
+    // After applying the update, at least one of roomId / roomTypeId must remain set.
+    const effectiveRoomId = dto.roomId ?? block.roomId;
+    const effectiveRoomTypeId = dto.roomTypeId ?? block.roomTypeId;
+    if (!effectiveRoomId && !effectiveRoomTypeId) {
+      throw new BadRequestException('Either roomId or roomTypeId is required');
+    }
 
-      if (dto.roomId) {
-        const room = await this.rooms.findOne({
-          where: { id: dto.roomId, propertyId },
-        });
-        if (!room) {
-          throw new BadRequestException('Room not found for property');
-        }
+    if (dto.roomId) {
+      const room = await this.rooms.findOne({
+        where: { id: dto.roomId, propertyId },
+      });
+      if (!room) {
+        throw new BadRequestException('Room not found for property');
       }
+    }
 
-      if (dto.roomTypeId) {
-        const roomType = await this.roomTypes.findOne({
-          where: { id: dto.roomTypeId, propertyId },
-        });
-        if (!roomType) {
-          throw new BadRequestException('Room type not found for property');
-        }
+    if (dto.roomTypeId) {
+      const roomType = await this.roomTypes.findOne({
+        where: { id: dto.roomTypeId, propertyId },
+      });
+      if (!roomType) {
+        throw new BadRequestException('Room type not found for property');
       }
     }
 

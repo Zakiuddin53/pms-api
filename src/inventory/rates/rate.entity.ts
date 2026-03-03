@@ -2,26 +2,22 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Propertie } from '../../propertie/entities/propertie.entity';
-import { RoomType } from '../room-types/room-type.entity';
+import { RoomType } from '../room-types/entity/room-type.entity';
+import { Property } from '@/property/entities/property.entity';
 
 @Entity()
+@Index(['roomTypeId', 'startDate', 'endDate'])
 export class Rate {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
   @Column()
   propertyId: number;
-
-  @ManyToOne(() => Propertie, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  property: Propertie;
 
   @Column()
   roomTypeId: number;
@@ -32,12 +28,18 @@ export class Rate {
   @JoinColumn()
   RoomType: RoomType;
 
-  @Column({ type: 'timestamp' })
-  startDate: string;
+  @Column({ type: 'date' })
+  startDate: Date;
 
-  @Column({ type: 'timestamp' })
-  endDate: string;
+  @Column({ type: 'date' })
+  endDate: Date;
 
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
   price: number;
+
+  @ManyToOne(() => Property, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  Property: Property;
 }

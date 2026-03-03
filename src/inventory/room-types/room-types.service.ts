@@ -1,21 +1,21 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
 import { CloudinaryService } from '../../common/cloudinary/cloudinary.service';
 import { CreateRoomTypeDto } from './dto/create-room-type.dto';
 import { UpdateRoomTypeDto } from './dto/update-room-type.dto';
-import { RoomType } from './room-type.entity';
+import { Amenity } from './entity/amenity.entity';
+import { RoomTypeAmenity } from './entity/room-type-amenity.entity';
+import { RoomType } from './entity/room-type.entity';
 
 @Injectable()
 export class RoomTypesService {
   constructor(
     @InjectRepository(RoomType)
     private readonly roomTypes: Repository<RoomType>,
+    @InjectRepository(RoomTypeAmenity)
+    private readonly roomTypeAmenities: Repository<RoomTypeAmenity>,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
@@ -27,17 +27,31 @@ export class RoomTypesService {
     const imageUrls =
       files && files.length > 0
         ? await this.cloudinaryService.uploadImages(files, 'room-types')
-        : dto.imageUrls;
+        : (dto.imageUrls ?? []);
 
-    const roomType = this.roomTypes.create({
-      propertyId,
-      name: dto.name,
-      description: dto.description,
-      capacity: dto.capacity,
-      amenities: dto.amenities,
-      imageUrls,
-    });
-    return this.roomTypes.save(roomType);
+    const roomType = await this.roomTypes.save(
+      this.roomTypes.create({
+        propertyId,
+        name: dto.name,
+        description: dto.description,
+        defaultPrice: dto.defaultPrice,
+        maxAdults: dto.maxAdults,
+        maxChildren: dto.maxChildren,
+        imageUrls,
+      }),
+    );
+
+    if (dto.amenityIds && dto.amenityIds.length > 0) {
+      const junctionRows = dto.amenityIds.map((amenityId) =>
+        this.roomTypeAmenities.create({
+          RoomType: { id: roomType.id },
+          Amenity: { id: amenityId },
+        }),
+      );
+      await this.roomTypeAmenities.save(junctionRows);
+    }
+
+    return this.getById(propertyId, roomType.id);
   }
 
   async list(propertyId: number, query: PaginateQuery) {
@@ -46,12 +60,13 @@ export class RoomTypesService {
       searchableColumns: ['name'],
       filterableColumns: {
         name: [FilterOperator.EQ, FilterOperator.ILIKE],
-        baseOccupancy: [FilterOperator.GTE, FilterOperator.LTE],
-        maxOccupancy: [FilterOperator.GTE, FilterOperator.LTE],
+        maxAdults: [FilterOperator.GTE, FilterOperator.LTE],
+        maxChildren: [FilterOperator.GTE, FilterOperator.LTE],
+        defaultPrice: [FilterOperator.GTE, FilterOperator.LTE],
       },
       relations: {
         Rooms: true,
-        Property: true,
+        Amenities: { Amenity: true },
       },
       where: { propertyId },
     });
@@ -60,7 +75,7 @@ export class RoomTypesService {
   async getById(propertyId: number, id: number) {
     const roomType = await this.roomTypes.findOne({
       where: { id, propertyId },
-      relations: { Rooms: true, Property: true },
+      relations: { Rooms: true, Amenities: { Amenity: true } },
     });
     if (!roomType) {
       throw new NotFoundException('Room type not found');
@@ -75,19 +90,37 @@ export class RoomTypesService {
     files?: Express.Multer.File[],
   ) {
     const roomType = await this.getById(propertyId, id);
+
     const imageUrls =
       files && files.length > 0
         ? await this.cloudinaryService.uploadImages(files, 'room-types')
         : (dto.imageUrls ?? roomType.imageUrls);
 
-    const updated = this.roomTypes.merge(roomType, {
-      name: dto.name ?? roomType.name,
-      description: dto.description ?? roomType.description,
-      capacity: dto.capacity ?? roomType.capacity,
-      amenities: dto.amenities ?? roomType.amenities,
-      imageUrls,
-    });
-    return this.roomTypes.save(updated);
+    await this.roomTypes.save(
+      this.roomTypes.merge(roomType, {
+        name: dto.name ?? roomType.name,
+        description: dto.description ?? roomType.description,
+        defaultPrice: dto.defaultPrice ?? roomType.defaultPrice,
+        maxAdults: dto.maxAdults ?? roomType.maxAdults,
+        maxChildren: dto.maxChildren ?? roomType.maxChildren,
+        imageUrls,
+      }),
+    );
+
+    if (dto.amenityIds !== undefined) {
+      await this.roomTypeAmenities.delete({ RoomType: { id } });
+      if (dto.amenityIds.length > 0) {
+        const junctionRows = dto.amenityIds.map((amenityId) =>
+          this.roomTypeAmenities.create({
+            RoomType: { id },
+            Amenity: { id: amenityId },
+          }),
+        );
+        await this.roomTypeAmenities.save(junctionRows);
+      }
+    }
+
+    return this.getById(propertyId, id);
   }
 
   async remove(propertyId: number, id: number) {

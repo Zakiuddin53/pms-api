@@ -3,12 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { FrontdeskModule } from './frontdesk/frontdesk.module';
-import { PropertieModule } from './propertie/propertie.module';
+import { BookingsModule } from './bookings/bookings.module';
+import { PropertyModule } from './property/property.module';
 import { ConfigModule } from '@nestjs/config';
 import { InventoryModule } from './inventory/inventory.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PaymentsModule } from './payments/payments.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -34,11 +35,11 @@ import { PaymentsModule } from './payments/payments.module';
       synchronize: process.env.DB_SYNCHRONIZE === 'true',
     }),
     AuthModule,
-    FrontdeskModule,
-    PropertieModule,
-    PropertieModule,
+    BookingsModule,
+    PropertyModule,
     InventoryModule,
     PaymentsModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

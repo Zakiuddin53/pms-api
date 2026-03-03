@@ -1,25 +1,50 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Property } from '@/property/entities/property.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { RoomType } from '../room-types/entity/room-type.entity';
+import { Room } from '../rooms/room.entity';
 
-@Entity('room_blocks')
+@Entity()
 export class RoomBlock {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column({ name: 'property_id', type: 'int' })
+  @Column()
   propertyId: number;
 
-  @Column({ name: 'room_id', type: 'int', nullable: true })
-  roomId?: number | null;
+  @ManyToOne(() => Property, { onDelete: 'CASCADE' })
+  @JoinColumn()
+  Property: Property;
 
-  @Column({ name: 'room_type_id', type: 'int', nullable: true })
-  roomTypeId?: number | null;
+  @Column({ nullable: true })
+  roomTypeId?: number;
 
-  @Column({ name: 'start_date', type: 'date' })
+  @ManyToOne(() => RoomType, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn()
+  RoomType?: RoomType;
+
+  @Column({ nullable: true })
+  roomId?: number;
+
+  @ManyToOne(() => Room, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn()
+  Room?: Room;
+
+  @Column({ type: 'date' })
   startDate: string;
 
-  @Column({ name: 'end_date', type: 'date' })
+  @Column({ type: 'date' })
   endDate: string;
 
   @Column({ type: 'text', nullable: true })
-  reason?: string | null;
+  reason?: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
 }

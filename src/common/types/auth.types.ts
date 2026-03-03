@@ -1,5 +1,5 @@
-import { GlobalRole } from '../enums/global-role.enum';
-import { PropertyRole } from '../enums/property-role.enum';
+import { GlobalRole } from '@/common/enums/role.enum';
+import { PropertyRole } from '@/common/enums/role.enum';
 
 export type JwtPropertyRole = {
   propertyId: number;

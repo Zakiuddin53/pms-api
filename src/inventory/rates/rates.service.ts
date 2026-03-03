@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
 import { Repository } from 'typeorm';
-import { RoomType } from '../room-types/room-type.entity';
+import { RoomType } from '../room-types/entity/room-type.entity';
 import { CreateRateDto } from './dto/create-rate.dto';
 import { UpdateRateDto } from './dto/update-rate.dto';
 import { Rate } from './rate.entity';
@@ -28,6 +28,23 @@ export class RatesService {
       throw new BadRequestException('Room type not found for property');
     }
 
+    if (dto.startDate > dto.endDate) {
+      throw new BadRequestException('Start date must be before end date');
+    }
+
+    const overlappingRate = await this.rates
+      .createQueryBuilder('rate')
+      .where('rate.roomTypeId = :roomTypeId', { roomTypeId: dto.roomTypeId })
+      .andWhere('rate.startDate <= :endDate', { endDate: dto.endDate })
+      .andWhere('rate.endDate >= :startDate', { startDate: dto.startDate })
+      .getOne();
+
+    if (overlappingRate) {
+      throw new BadRequestException(
+        `Rate already exists for overlapping period: ${overlappingRate.startDate} to ${overlappingRate.endDate}`,
+      );
+    }
+
     const rate = this.rates.create({
       propertyId,
       roomTypeId: dto.roomTypeId,
@@ -35,6 +52,7 @@ export class RatesService {
       endDate: dto.endDate,
       price: dto.price,
     });
+
     return this.rates.save(rate);
   }
 
