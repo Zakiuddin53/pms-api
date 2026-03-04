@@ -10,7 +10,7 @@ if (!(global as any).crypto) {
   (global as any).crypto = webcrypto;
 }
 const allowedOrigins = [
-  'https://arooba-pms.vercel.app',
+  'https://indogoan.vercel.app',
   'http://localhost:3000',
   'http://localhost:4000',
   'http://127.0.0.1:3000',
