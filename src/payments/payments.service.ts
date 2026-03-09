@@ -62,7 +62,7 @@ export class PaymentsService {
     let order: any;
     try {
       order = await this.razorpay.orders.create({
-        amount: booking.totalAmount,
+        amount: Math.round(Number(booking.totalAmount) * 100),
         currency: 'INR',
         receipt,
         notes: { bookingCode: booking.bookingCode },

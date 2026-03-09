@@ -32,8 +32,6 @@ export class PaymentsController {
    * Create a Razorpay order for a HOLD booking.
    * Returns { orderId, amount, currency, keyId } to pass to Razorpay Checkout.
    */
-  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
-  @RequirePermission(Permissions.PAYMENTS_CREATE)
   @ApiOperation({ summary: 'Create a Razorpay payment order for a booking' })
   @Post('properties/:propertyId/payments/create-order')
   async createOrder(
@@ -48,8 +46,6 @@ export class PaymentsController {
    * sends the payment credentials here for server-side verification.
    * On success the booking is moved from HOLD → CONFIRMED.
    */
-  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
-  @RequirePermission(Permissions.PAYMENTS_CREATE)
   @ApiOperation({
     summary:
       'Verify Razorpay payment signature and confirm the booking (idempotent)',

@@ -137,13 +137,15 @@ export class PropertyService {
   async getById(id: number) {
     const property = await this.properties.findOne({
       where: { id },
-      relations: {
-        RoomTypes: {
-          Rates: true,
-        },
-        Contact: true,
-        PropertyAbout: true,
-      },
+      relations: [
+        'RoomTypes',
+        'RoomTypes.Rates',
+        'RoomTypes.Amenities',
+        'RoomTypes.Amenities.Amenity',
+        'Contact',
+        'PropertyAbout',
+        'Policies',
+      ],
     });
 
     if (!property) {

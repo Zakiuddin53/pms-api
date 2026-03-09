@@ -48,8 +48,6 @@ export class RoomTypesController {
     return this.roomTypesService.create(Number(propertyId), body, files);
   }
 
-  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
-  @RequirePermission(Permissions.ROOM_TYPES_READ)
   @Get()
   async list(
     @Param('propertyId') propertyId: string,

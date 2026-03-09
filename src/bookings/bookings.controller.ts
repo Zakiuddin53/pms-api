@@ -65,8 +65,6 @@ export class BookingsController {
     return this.bookingsService.getBookingByCode(bookingCode);
   }
 
-  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
-  @RequirePermission(Permissions.BOOKINGS_HOLD)
   @ApiOperation({
     summary: 'Create a booking hold (payment required to confirm)',
   })
