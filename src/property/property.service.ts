@@ -47,6 +47,7 @@ export class PropertyService {
         propertyType: dto.propertyType,
         city: dto.city,
         state: dto.state,
+        rating: dto.rating,
         ownerId,
       });
 

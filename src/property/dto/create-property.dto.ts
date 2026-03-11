@@ -3,6 +3,7 @@ import {
   IsArray,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsObject,
   IsOptional,
   IsString,
@@ -80,6 +81,10 @@ export class CreatePropertyDto {
   @IsString()
   @ApiProperty()
   state?: string;
+
+  @IsNumber()
+  @ApiProperty()
+  rating: number;
 
   @IsOptional()
   @ValidateNested()
