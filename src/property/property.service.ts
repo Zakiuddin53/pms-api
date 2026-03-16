@@ -223,56 +223,6 @@ export class PropertyService {
     });
   }
 
-  async createPropertyAdmin(propertyId: number, dto: CreatePropertyAdminDto) {
-    const property = await this.properties.findOne({
-      where: { id: propertyId },
-    });
-    if (!property) throw new NotFoundException('Property not found');
-
-    const email = dto.email.toLowerCase();
-    const existingUser = await this.users.findOne({
-      where: { email },
-      select: { id: true },
-    });
-    if (existingUser)
-      throw new BadRequestException('A user with this email already exists');
-
-    const user = await this.users.save(
-      this.users.create({
-        userRole: UserRole.STAFF,
-        name: dto.name,
-        email,
-        status: UserStatus.PENDING,
-      }),
-    );
-
-    const membership = await this.memberships.save(
-      this.memberships.create({
-        userId: user.id,
-        propertyId,
-        role: PropertyRole.PROPERTY_ADMIN,
-        isActive: true,
-      }),
-    );
-
-    const token = this.authService.generateInviteToken(String(user.id));
-    await this.mailService.sendStaffInviteEmail(
-      email,
-      dto.name,
-      property.name,
-      token,
-    );
-
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: membership.role,
-      propertyId,
-      status: user.status,
-    };
-  }
-
   async createStaff(propertyId: number, dto: CreatePropertyStaffDto) {
     const property = await this.properties.findOne({
       where: { id: propertyId },

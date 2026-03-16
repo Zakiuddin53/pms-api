@@ -46,6 +46,7 @@ export class PropertyController {
     return this.propertyService.create(ownerId, createPropertyDto);
   }
 
+  // TODO :- increase image acceptace size
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermission(Permissions.PROPERTIES_UPDATE)
   @Post(':propertyId/images')
@@ -81,17 +82,6 @@ export class PropertyController {
     @Body() updatePropertyDto: UpdatePropertyDto,
   ) {
     return this.propertyService.update(Number(id), updatePropertyDto);
-  }
-
-  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
-  @RequirePermission(Permissions.PROPERTY_ADMINS_CREATE)
-  @Post(':propertyId/admins')
-  @ApiOperation({ summary: 'Add an admin to a property' })
-  async createPropertyAdmin(
-    @Param('propertyId') propertyId: string,
-    @Body() body: CreatePropertyAdminDto,
-  ) {
-    return this.propertyService.createPropertyAdmin(Number(propertyId), body);
   }
 
   @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
