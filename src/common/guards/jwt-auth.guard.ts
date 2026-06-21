@@ -5,7 +5,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import jwt from 'jsonwebtoken';
-import { GlobalRole } from '@/common/enums/role.enum';
 import { PropertyRole } from '@/common/enums/role.enum';
 import type { JwtPayload } from '@/common/types/auth.types';
 
@@ -17,15 +16,8 @@ const getJwtSecret = (): string => {
   return secret;
 };
 
-const isGlobalRole = (value: unknown): value is GlobalRole =>
-  value === GlobalRole.SUPER_ADMIN ||
-  value === GlobalRole.PROPERTY_ADMIN ||
-  value === GlobalRole.NONE;
-
 const isPropertyRole = (value: unknown): value is PropertyRole =>
-  value === PropertyRole.SUPER_ADMIN ||
-  value === PropertyRole.PROPERTY_ADMIN ||
-  value === PropertyRole.PROPERTY_STAFF;
+  value === PropertyRole.SUPER_ADMIN || value === PropertyRole.PROPERTY_ADMIN;
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -42,9 +34,9 @@ export class JwtAuthGuard implements CanActivate {
       if (
         !decoded?.sub ||
         !decoded?.email ||
-        !decoded?.globalRole ||
-        !Array.isArray(decoded?.roles) ||
-        !isGlobalRole(decoded.globalRole)
+        !isPropertyRole(decoded.role) ||
+        !Array.isArray(decoded.permissions) ||
+        !Array.isArray(decoded.roles)
       ) {
         throw new UnauthorizedException('Unauthorized');
       }

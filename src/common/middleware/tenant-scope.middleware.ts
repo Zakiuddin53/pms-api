@@ -1,13 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { GlobalRole } from '@/common/enums/role.enum';
+import { PropertyRole } from '@/common/enums/role.enum';
 
 export const tenantScope = (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const role = req.user?.globalRole;
-  if (role === GlobalRole.SUPER_ADMIN) {
+  if (req.user?.role === PropertyRole.SUPER_ADMIN) {
     const headerValue = req.headers['x-property-id'];
     if (headerValue === undefined) {
       if (req.baseUrl?.startsWith('/super-admin')) {

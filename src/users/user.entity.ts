@@ -8,8 +8,9 @@ import {
 } from 'typeorm';
 import { UserPropertyRole } from '../property/entities/user-property-role.entity';
 import { UserStatus } from '@/common/enums/status.enum';
-import { Booking } from '@/bookings/entities/booking.entity';
-import { UserRole } from '@/common/enums/role.enum';
+import { BookingGuest } from '@/bookings/entities/booking-guest.entity';
+import { PropertyRole, UserIdType, UserRole } from '@/common/enums/role.enum';
+import type { Permission } from '@/common/permissions/permissions';
 
 @Entity()
 export class User {
@@ -19,7 +20,7 @@ export class User {
   @Column()
   name: string;
 
-  @Column({ unique: true, nullable: true })
+  @Column({ nullable: true })
   email?: string;
 
   @Column({ nullable: true })
@@ -35,6 +36,17 @@ export class User {
 
   @Column({
     type: 'enum',
+    enum: PropertyRole,
+    enumName: 'property_role',
+    nullable: true,
+  })
+  role: PropertyRole;
+
+  @Column({ type: 'simple-array', nullable: true })
+  permissions: Permission[];
+
+  @Column({
+    type: 'enum',
     enum: UserStatus,
     enumName: 'user_status',
     default: UserStatus.ACTIVE,
@@ -44,11 +56,18 @@ export class User {
   @Column({ nullable: true })
   phone?: string;
 
-  @Column({ nullable: true })
-  idType?: string; // 'AADHAR' | 'PASSPORT' | 'DRIVING_LICENSE'
+  @Column({
+    type: 'enum',
+    enum: UserIdType,
+    nullable: true,
+  })
+  idType?: UserIdType;
 
   @Column({ nullable: true })
-  idNumber?: string;
+  idFrontUrl?: string;
+
+  @Column({ nullable: true })
+  idBackUrl?: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -56,11 +75,9 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  // Staff only
   @OneToMany(() => UserPropertyRole, (m) => m.User)
   PropertyRoles: UserPropertyRole[];
 
-  // Guest only
-  @OneToMany(() => Booking, (b) => b.Guest)
-  Bookings: Booking[];
+  @OneToMany(() => BookingGuest, (bg) => bg.Guest)
+  BookingGuests: BookingGuest[];
 }

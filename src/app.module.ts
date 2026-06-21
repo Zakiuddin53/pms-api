@@ -10,9 +10,20 @@ import { InventoryModule } from './inventory/inventory.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PaymentsModule } from './payments/payments.module';
 import { MailModule } from './mail/mail.module';
+import { SuperAdminModule } from './super-admin/super-admin.module';
+import { JustdialModule } from './justdial/justdial.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { UploadModule } from './upload.module';
+
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 1 minute window
+        limit: 200, // 200 requests per minute
+      },
+    ]),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: process.env.ENV_FILE_PATH
@@ -40,6 +51,9 @@ import { MailModule } from './mail/mail.module';
     InventoryModule,
     PaymentsModule,
     MailModule,
+    SuperAdminModule,
+    JustdialModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,1 +1,81 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';import type { Request } from 'express';import { AuthService } from './auth.service';import { LoginDto } from './dto/login.dto';import { RegisterDto } from './dto/register.dto';import { VerifyEmailDto } from './dto/verify-email.dto';import { ForgotPasswordDto } from './dto/forgot-password.dto';import { ResetPasswordDto } from './dto/reset-password.dto';import { AcceptInviteDto } from './dto/accept-invite.dto';import { RefreshTokenDto } from './dto/refresh-token.dto';import { ResendVerificationDto } from './dto/resend-verification.dto';import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';import { ApiOperation, ApiTags } from '@nestjs/swagger';@ApiTags('Auth')@Controller('auth')export class AuthController {  constructor(private readonly authService: AuthService) {}  @Post('register')  @ApiOperation({ summary: 'Register' })  async register(@Body() body: RegisterDto) {    return this.authService.register(body);  }  @Post('verify-email')  @ApiOperation({ summary: 'Verify email' })  async verifyEmail(@Body() body: VerifyEmailDto) {    return this.authService.verifyEmail(body);  }  @Post('resend-verification')  @ApiOperation({ summary: 'Resend email verification' })  async resendVerification(@Body() body: ResendVerificationDto) {    return this.authService.resendVerification(body);  }  @Post('login')  @ApiOperation({ summary: 'Login' })  async login(@Body() body: LoginDto) {    return this.authService.login(body);  }  @Post('refresh')  @ApiOperation({ summary: 'Refresh access' })  async refreshToken(@Body() body: RefreshTokenDto) {    return this.authService.refreshToken(body);  }  @UseGuards(JwtAuthGuard)  @Get('me')  @ApiOperation({ summary: 'Get user' })  async me(@Req() req: Request) {    return this.authService.me((req as any).user);  }  @Post('forgot-password')  @ApiOperation({ summary: 'Forgot password' })  async forgotPassword(@Body() body: ForgotPasswordDto) {    return this.authService.forgotPassword(body);  }  @Post('reset-password')  @ApiOperation({ summary: 'Reset password' })  async resetPassword(@Body() body: ResetPasswordDto) {    return this.authService.resetPassword(body);  }  @Post('accept-invite')  @ApiOperation({ summary: 'Accept staff invite' })  async acceptInvite(@Body() body: AcceptInviteDto) {    return this.authService.acceptInvite(body);  }}
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import type { Request } from 'express';
+import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { AcceptInviteDto } from './dto/accept-invite.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { OwnerSignupDto } from './dto/owner-signup.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Auth')
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post('register')
+  @ApiOperation({ summary: 'Register' })
+  async register(@Body() body: RegisterDto) {
+    return this.authService.register(body);
+  }
+
+  @Post('owner-signup')
+  @ApiOperation({ summary: 'Owner signup (requires super-admin activation)' })
+  async ownerSignup(@Body() body: OwnerSignupDto) {
+    return this.authService.ownerSignup(body);
+  }
+
+  @Post('verify-email')
+  @ApiOperation({ summary: 'Verify email' })
+  async verifyEmail(@Body() body: VerifyEmailDto) {
+    return this.authService.verifyEmail(body);
+  }
+
+  @Post('resend-verification')
+  @ApiOperation({ summary: 'Resend email verification' })
+  async resendVerification(@Body() body: ResendVerificationDto) {
+    return this.authService.resendVerification(body);
+  }
+
+  @Post('login')
+  @ApiOperation({ summary: 'Login' })
+  async login(@Body() body: LoginDto) {
+    return this.authService.login(body);
+  }
+
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access' })
+  async refreshToken(@Body() body: RefreshTokenDto) {
+    return this.authService.refreshToken(body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  @ApiOperation({ summary: 'Get user' })
+  async me(@Req() req: Request) {
+    return this.authService.me((req as any).user);
+  }
+
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Forgot password' })
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
+    return this.authService.forgotPassword(body);
+  }
+
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Reset password' })
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    return this.authService.resetPassword(body);
+  }
+
+  @Post('accept-invite')
+  @ApiOperation({ summary: 'Accept staff invite' })
+  async acceptInvite(@Body() body: AcceptInviteDto) {
+    return this.authService.acceptInvite(body);
+  }
+}

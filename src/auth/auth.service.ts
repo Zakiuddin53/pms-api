@@ -20,7 +20,7 @@ import type { JwtPayload } from '../common/types/auth.types';
 import { User } from '../users/user.entity';
 import { UserPropertyRole } from '../property/entities/user-property-role.entity';
 import { MailService } from '../mail/mail.service';
-import { LoginDto } from './dto/login.dto';
+import { type AuthPortal, LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -28,7 +28,8 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AcceptInviteDto } from './dto/accept-invite.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
-import { PropertyRole, GlobalRole, UserRole } from '@/common/enums/role.enum';
+import { OwnerSignupDto } from './dto/owner-signup.dto';
+import { PropertyRole, UserRole } from '@/common/enums/role.enum';
 import { UserStatus } from '@/common/enums/status.enum';
 
 type TokenPurpose =
@@ -87,6 +88,7 @@ export class AuthService implements OnModuleInit {
     const user = await this.users.save(
       this.users.create({
         userRole: UserRole.STAFF,
+        role: PropertyRole.SUPER_ADMIN,
         name,
         email,
         passwordHash,
@@ -124,6 +126,7 @@ export class AuthService implements OnModuleInit {
     const user = await this.users.save(
       this.users.create({
         userRole: UserRole.STAFF,
+        role: PropertyRole.PROPERTY_ADMIN,
         name: dto.name,
         email,
         passwordHash,
@@ -153,6 +156,46 @@ export class AuthService implements OnModuleInit {
     return {
       message:
         'Registration successful. Please check your email to verify your account.',
+    };
+  }
+
+  async ownerSignup(dto: OwnerSignupDto) {
+    const email = dto.email.toLowerCase();
+    const existing = await this.users.findOne({
+      where: { email },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new ConflictException('An account with this email already exists');
+    }
+
+    const passwordHash = await argon2.hash(dto.password);
+    const user = await this.users.save(
+      this.users.create({
+        userRole: UserRole.STAFF,
+        role: PropertyRole.PROPERTY_ADMIN,
+        name: dto.name,
+        email,
+        phone: dto.phone?.trim() || undefined,
+        passwordHash,
+        status: UserStatus.INACTIVE,
+      }),
+    );
+
+    // Create a PROPERTY_ADMIN membership with no property attached yet.
+    // The user cannot log in until a super admin activates the account.
+    await this.memberships.save(
+      this.memberships.create({
+        userId: user.id,
+        propertyId: null,
+        role: PropertyRole.PROPERTY_ADMIN,
+        isActive: true,
+      }),
+    );
+
+    return {
+      message:
+        'Signup submitted. A super admin will activate your account shortly.',
     };
   }
 
@@ -214,6 +257,11 @@ export class AuthService implements OnModuleInit {
     }
 
     if (user.status !== UserStatus.ACTIVE) {
+      if (user.status === UserStatus.INACTIVE) {
+        throw new UnauthorizedException(
+          'Your account is pending activation. A super admin must approve it before you can log in.',
+        );
+      }
       throw new UnauthorizedException(
         'Your account is inactive. Please contact support.',
       );
@@ -229,6 +277,7 @@ export class AuthService implements OnModuleInit {
     });
 
     const jwtPayload = this.buildJwtPayload(user, memberships);
+    this.assertPortalAccess(dto.portal, jwtPayload);
     return {
       accessToken: this.signAccessToken(jwtPayload),
       refreshToken: this.signRefreshToken(String(user.id)),
@@ -237,10 +286,25 @@ export class AuthService implements OnModuleInit {
         name: user.name,
         email: user.email,
         status: user.status,
-        globalRole: jwtPayload.globalRole,
+        role: jwtPayload.role,
+        permissions: jwtPayload.permissions,
         roles: jwtPayload.roles,
       },
     };
+  }
+
+  async issueAccessTokenForUser(userId: number): Promise<string> {
+    const user = await this.users.findOne({ where: { id: userId } });
+    if (!user || user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException('Account not found or inactive.');
+    }
+
+    const memberships = await this.memberships.find({
+      where: { userId: user.id, isActive: true },
+    });
+
+    const jwtPayload = this.buildJwtPayload(user, memberships);
+    return this.signAccessToken(jwtPayload);
   }
 
   async refreshToken(dto: RefreshTokenDto) {
@@ -345,7 +409,8 @@ export class AuthService implements OnModuleInit {
         id: user.id,
         name: user.name,
         email: user.email,
-        globalRole: jwtPayload.globalRole,
+        role: jwtPayload.role,
+        permissions: jwtPayload.permissions,
         roles: jwtPayload.roles,
       },
     };
@@ -364,7 +429,8 @@ export class AuthService implements OnModuleInit {
       name: user.name,
       email: user.email,
       status: user.status,
-      globalRole: jwtPayload.globalRole,
+      role: jwtPayload.role,
+      permissions: jwtPayload.permissions,
       roles: jwtPayload.roles,
     };
   }
@@ -376,8 +442,13 @@ export class AuthService implements OnModuleInit {
   }
 
   private getRefreshSecret(): string {
-    const secret = process.env.JWT_REFRESH_SECRET;
-    if (!secret) throw new Error('JWT_REFRESH_SECRET is not configured');
+    const secret = process.env.JWT_REFRESH_SECRET ?? process.env.JWT_SECRET;
+    if (!secret) throw new Error('JWT_SECRET is not configured');
+    if (!process.env.JWT_REFRESH_SECRET) {
+      this.logger.warn(
+        'JWT_REFRESH_SECRET not set — using JWT_SECRET for refresh tokens (development fallback)',
+      );
+    }
     return secret;
   }
 
@@ -441,30 +512,48 @@ export class AuthService implements OnModuleInit {
     const isSuperAdmin = memberships.some(
       (m) => m.role === PropertyRole.SUPER_ADMIN,
     );
-    const isPropertyAdmin = memberships.some(
-      (m) => m.role === PropertyRole.PROPERTY_ADMIN,
-    );
 
     const propertyRoles = memberships
-      .filter(
-        (m) => m.propertyId !== null && m.role !== PropertyRole.SUPER_ADMIN,
-      )
+      .filter((m) => m.propertyId !== null)
       .map((m) => ({ propertyId: m.propertyId, role: m.role }));
 
-    let globalRole: GlobalRole;
-    if (isSuperAdmin) {
-      globalRole = GlobalRole.SUPER_ADMIN;
-    } else if (isPropertyAdmin) {
-      globalRole = GlobalRole.PROPERTY_ADMIN;
-    } else {
-      globalRole = GlobalRole.NONE;
-    }
+    const role = isSuperAdmin
+      ? PropertyRole.SUPER_ADMIN
+      : PropertyRole.PROPERTY_ADMIN;
+
+    // SUPER_ADMIN: embed empty array — all permissions resolved at check-time from ALL_PERMISSIONS.
+    // PROPERTY_ADMIN: embed their custom stored permission set so the guard needs no DB hit.
+    const permissions = isSuperAdmin ? [] : (user.permissions ?? []);
 
     return {
       sub: String(user.id),
       email: user.email,
-      globalRole,
+      role,
+      permissions,
       roles: propertyRoles,
     };
+  }
+
+  private assertPortalAccess(
+    portal: AuthPortal | undefined,
+    jwtPayload: JwtPayload,
+  ) {
+    if (!portal) return;
+
+    const hasAdminAccess =
+      jwtPayload.role === PropertyRole.SUPER_ADMIN ||
+      jwtPayload.role === PropertyRole.PROPERTY_ADMIN;
+
+    if (portal === 'admin' && !hasAdminAccess) {
+      throw new UnauthorizedException(
+        'You are not authorized for the admin console.',
+      );
+    }
+
+    if (portal === 'frontdesk' && !hasAdminAccess) {
+      throw new UnauthorizedException(
+        'You are not authorized for the frontdesk console.',
+      );
+    }
   }
 }

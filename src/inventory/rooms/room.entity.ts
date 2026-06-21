@@ -1,8 +1,10 @@
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { RoomStatus } from '../../common/enums/room-status.enum';
@@ -10,6 +12,7 @@ import { RoomType } from '../room-types/entity/room-type.entity';
 import { Property } from '@/property/entities/property.entity';
 
 @Entity()
+@Index(['propertyId', 'roomNumber'], { unique: true })
 export class Room {
   @PrimaryGeneratedColumn('increment')
   id: number;

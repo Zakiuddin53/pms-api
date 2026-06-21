@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { AppModule } from './app.module';
 import { webcrypto } from 'crypto';
+import { json, urlencoded } from 'express';
 
 if (!(global as any).crypto) {
   (global as any).crypto = webcrypto;
@@ -12,13 +13,21 @@ if (!(global as any).crypto) {
 const allowedOrigins = [
   'https://indogoan.vercel.app',
   'http://localhost:3000',
+  'http://localhost:3001',
+  'http://admin.localhost:3001',
   'http://localhost:4000',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:4000',
   'https://backendinvestigate360.agency',
+  'https://www.indogoanhospitality.in',
+  'https://indogoanhospitality.in',
+  'https://admin.indogoanhospitality.in',
 ];
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
+
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ limit: '10mb', extended: true }));
 
   app.enableCors({
     origin: (origin, callback) => {
@@ -28,7 +37,6 @@ async function bootstrap() {
       }
 
       const isAllowed = allowedOrigins.some((allowedOrigin) => {
-        // Clean both origin and allowedOrigin for comparison (remove trailing slashes)
         const cleanOrigin = origin.replace(/\/$/, '');
         const cleanAllowed = allowedOrigin.replace(/\/$/, '');
         return cleanOrigin === cleanAllowed;
@@ -72,7 +80,7 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
+  await app.listen(process.env.PORT ?? 4000, '0.0.0.0');
 }
 
 bootstrap();

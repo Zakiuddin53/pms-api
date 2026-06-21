@@ -21,7 +21,7 @@ async function test() {
   const repo = connection.getRepository(Property);
   const property = await repo.findOne({
     where: { id: 2 },
-    relations: ['Policies', 'Contact', 'PropertyAbout']
+    relations: ['Policies', 'Contact', 'PropertyAbout'],
   });
 
   console.log('Property ID 2:', JSON.stringify(property, null, 2));

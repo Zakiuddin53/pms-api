@@ -37,6 +37,7 @@ export class RoomTypesController {
   @UseInterceptors(
     FilesInterceptor('images', 10, {
       storage: memoryStorage(),
+      limits: { fileSize: 10 * 1024 * 1024 },
     }),
   )
   @Post()
@@ -48,6 +49,8 @@ export class RoomTypesController {
     return this.roomTypesService.create(Number(propertyId), body, files);
   }
 
+  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
+  @RequirePermission(Permissions.ROOM_TYPES_READ)
   @Get()
   async list(
     @Param('propertyId') propertyId: string,
@@ -76,6 +79,7 @@ export class RoomTypesController {
   @UseInterceptors(
     FilesInterceptor('images', 10, {
       storage: memoryStorage(),
+      limits: { fileSize: 10 * 1024 * 1024 },
     }),
   )
   @Patch(':roomTypeId')

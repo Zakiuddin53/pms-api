@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  Get,
   Headers,
   HttpCode,
   HttpStatus,
   Param,
   ParseIntPipe,
   Post,
+  Query,
   RawBodyRequest,
   Req,
   UseGuards,
@@ -22,11 +24,23 @@ import { PropertyRoleGuard } from '../common/guards/property-role.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { Permissions } from '../common/permissions/permissions';
+import { ListPaymentsQueryDto } from './dto/list-payments-query.dto';
 
 @ApiTags('Payments')
 @Controller()
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
+
+  @UseGuards(JwtAuthGuard, PropertyRoleGuard, PermissionsGuard)
+  @RequirePermission(Permissions.PAYMENTS_READ)
+  @ApiOperation({ summary: 'List payment transactions for a property' })
+  @Get('properties/:propertyId/payments')
+  async listPayments(
+    @Param('propertyId', ParseIntPipe) propertyId: number,
+    @Query() query: ListPaymentsQueryDto,
+  ) {
+    return this.paymentsService.listPropertyPayments(propertyId, query);
+  }
 
   /**
    * Create a Razorpay order for a HOLD booking.

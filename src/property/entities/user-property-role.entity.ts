@@ -34,7 +34,7 @@ export class UserPropertyRole {
   Property: Property;
 
   @Column({ type: 'enum', enum: PropertyRole })
-  role: PropertyRole
+  role: PropertyRole;
 
   @Column({ default: true })
   isActive: boolean;
@@ -42,4 +42,3 @@ export class UserPropertyRole {
   @CreateDateColumn()
   createdAt: Date;
 }
-

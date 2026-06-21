@@ -11,6 +11,7 @@ import * as crypto from 'crypto';
 import { BookingsService } from '../bookings/service/bookings.service';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
 import { BookingStatus } from '@/common/enums/booking.enum';
+import { ListPaymentsQueryDto } from './dto/list-payments-query.dto';
 
 @Injectable()
 export class PaymentsService {
@@ -86,10 +87,14 @@ export class PaymentsService {
 
     return {
       orderId: order.id as string,
-      amount: booking.totalAmount,
+      amount: Math.round(Number(booking.totalAmount) * 100),
       currency: 'INR',
-      keyId: this.configService.get<string>('RAZORPAY_KEY_ID')!,
+      keyId: this.configService.get<string>('RAZORPAY_KEY_ID'),
     };
+  }
+
+  async listPropertyPayments(propertyId: number, query: ListPaymentsQueryDto) {
+    return this.bookingsService.listPaymentTransactions(propertyId, query);
   }
 
   async verifyPayment(
@@ -178,7 +183,7 @@ export class PaymentsService {
     }
 
     if (event?.event === 'payment.captured') {
-      const payment = event?.payload?.payment?.entity as any;
+      const payment = event?.payload?.payment?.entity;
       const orderId: string | undefined = payment?.order_id;
       const paymentId: string | undefined = payment?.id;
       const amountInPaise: number = payment?.amount ?? 0;

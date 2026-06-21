@@ -11,11 +11,14 @@ import {
 } from 'typeorm';
 import { BookingItem } from './booking-item.entity';
 import { BookingSource, BookingStatus } from '@/common/enums/booking.enum';
-import { User } from '@/users/user.entity';
+import { Property } from '@/property/entities/property.entity';
 import { PaymentTransaction } from './payment-transaction.entity';
+import { BookingGuest } from './booking-guest.entity';
+import { BookingLog } from './booking-log.entity';
 
 @Entity()
 @Index(['propertyId', 'checkIn', 'checkOut'])
+@Index(['bookingCode'], { unique: true })
 export class Booking {
   @PrimaryGeneratedColumn('increment')
   id: number;
@@ -41,12 +44,9 @@ export class Booking {
   })
   status: BookingStatus;
 
-  @Column()
-  guestId: number;
-
-  @ManyToOne(() => User, (u) => u.Bookings, { onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'guestId' })
-  Guest: User;
+  @ManyToOne(() => Property, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'propertyId' })
+  Property: Property;
 
   @Column({ type: 'date' })
   checkIn: string;
@@ -83,4 +83,10 @@ export class Booking {
 
   @OneToMany(() => PaymentTransaction, (p) => p.Booking)
   Payments: PaymentTransaction[];
+
+  @OneToMany(() => BookingGuest, (bg) => bg.Booking, { cascade: true })
+  Guests: BookingGuest[];
+
+  @OneToMany(() => BookingLog, (bl) => bl.Booking)
+  Logs: BookingLog[];
 }

@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { BookingsService } from './bookings.service';
+import { BookingLifecycleService } from './booking-lifecycle.service';
 
 @Injectable()
 export class BookingCleanupService {
-  constructor(private readonly bookingsService: BookingsService) {}
+  constructor(private readonly lifecycleService: BookingLifecycleService) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
   async cancelExpiredHolds() {
-    await this.bookingsService.cancelExpiredHolds();
+    await this.lifecycleService.cancelExpiredHolds();
   }
 }

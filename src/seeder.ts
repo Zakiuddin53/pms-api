@@ -65,6 +65,7 @@ async function bootstrap() {
           name: 'Arooba Admin',
           email: 'admin@arooba.com',
           passwordHash,
+          role: PropertyRole.SUPER_ADMIN,
           status: UserStatus.ACTIVE,
         },
       ]),
@@ -119,20 +120,25 @@ async function bootstrap() {
     const policies = [
       {
         policyType: PolicyType.CANCELLATION,
-        description: 'Free cancellation up to 24 hours before check-in. Cancellation within 24 hours will incur a 100% charge.',
+        description:
+          'Free cancellation up to 24 hours before check-in. Cancellation within 24 hours will incur a 100% charge.',
       },
       {
         policyType: PolicyType.PAYMENT,
-        description: 'Advance payment of 50% required at the time of booking. Balance can be paid at the hotel.',
+        description:
+          'Advance payment of 50% required at the time of booking. Balance can be paid at the hotel.',
       },
       {
         policyType: PolicyType.CHECK_IN,
-        description: 'Primary guest must be at least 18 years of age. Passport, Aadhaar, Driving License and Govt. ID are accepted. Local IDs not allowed.',
-      }
+        description:
+          'Primary guest must be at least 18 years of age. Passport, Aadhaar, Driving License and Govt. ID are accepted. Local IDs not allowed.',
+      },
     ];
 
     for (const p of policies) {
-      await manager.save(manager.create(PropertyPolicy, { ...p, Property: savedProperty }));
+      await manager.save(
+        manager.create(PropertyPolicy, { ...p, Property: savedProperty }),
+      );
     }
     console.log('Property policies added');
 
@@ -168,33 +174,42 @@ async function bootstrap() {
     const roomTypeSeeds = [
       {
         name: 'Deluxe Room',
-        description: 'Comfortable deluxe room with a separate washroom and balcony, perfect for couples.',
+        description:
+          'Comfortable deluxe room with a separate washroom and balcony, perfect for couples.',
         maxAdults: 2,
         maxChildren: 1,
         defaultPrice: 3000,
         roomCount: 2,
-        imageUrls: ['https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'],
-        amenityIndices: [0, 1, 2, 3, 5, 6, 7]
+        imageUrls: [
+          'https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+        ],
+        amenityIndices: [0, 1, 2, 3, 5, 6, 7],
       },
       {
         name: 'Super Jumbo Room',
-        description: 'Spacious super jumbo room with a separate washroom and balcony, ideal for families.',
+        description:
+          'Spacious super jumbo room with a separate washroom and balcony, ideal for families.',
         maxAdults: 4,
         maxChildren: 2,
         defaultPrice: 5000,
         roomCount: 2,
-        imageUrls: ['https://images.unsplash.com/photo-1584132967334-10e028bd69f7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'],
-        amenityIndices: [0, 1, 2, 3, 4, 5, 6, 7]
+        imageUrls: [
+          'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+        ],
+        amenityIndices: [0, 1, 2, 3, 4, 5, 6, 7],
       },
       {
         name: 'Family Room',
-        description: 'Large family room with a separate washroom and balcony, designed for comfortable family stays.',
+        description:
+          'Large family room with a separate washroom and balcony, designed for comfortable family stays.',
         maxAdults: 4,
         maxChildren: 2,
         defaultPrice: 4000,
         roomCount: 2,
-        imageUrls: ['https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'],
-        amenityIndices: [0, 1, 2, 3, 5, 6, 7]
+        imageUrls: [
+          'https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+        ],
+        amenityIndices: [0, 1, 2, 3, 5, 6, 7],
       },
     ];
 
@@ -216,10 +231,12 @@ async function bootstrap() {
 
       // Add linking amenities
       for (const idx of seed.amenityIndices) {
-        await manager.save(manager.create(RoomTypeAmenity, {
-          RoomType: roomType,
-          Amenity: savedAmenities[idx]
-        }));
+        await manager.save(
+          manager.create(RoomTypeAmenity, {
+            RoomType: roomType,
+            Amenity: savedAmenities[idx],
+          }),
+        );
       }
 
       console.log(`Room Type created: ${seed.name}`);
@@ -236,7 +253,10 @@ async function bootstrap() {
           Property: savedProperty,
           roomTypeId: roomType.id,
           roomType: roomType,
-          roomNumber: `${roomType.name.split(' ').map((w) => w[0]).join('')}${roomIndex}`,
+          roomNumber: `${roomType.name
+            .split(' ')
+            .map((w) => w[0])
+            .join('')}${roomIndex}`,
           status: RoomStatus.ACTIVE,
         });
         rooms.push(room);

@@ -21,6 +21,7 @@ import { AvailabilityService } from './availability/availability.service';
 import { CloudinaryModule } from '../common/cloudinary/cloudinary.module';
 import { Amenity } from './room-types/entity/amenity.entity';
 import { RoomTypeAmenity } from './room-types/entity/room-type-amenity.entity';
+import { Property } from '@/property/entities/property.entity';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { RoomTypeAmenity } from './room-types/entity/room-type-amenity.entity';
       RoomTypeAmenity,
       Amenity,
       Room,
+      Property,
       RoomBlock,
       Rate,
       RoomAvailability,

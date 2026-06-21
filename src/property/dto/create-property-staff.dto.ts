@@ -1,4 +1,5 @@
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class CreatePropertyStaffDto {
   @IsString()
@@ -7,4 +8,15 @@ export class CreatePropertyStaffDto {
 
   @IsEmail()
   email: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(8)
+  @ApiPropertyOptional()
+  password?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional()
+  phone?: string;
 }

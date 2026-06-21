@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { GlobalRole } from '@/common/enums/role.enum';
 import { PropertyRole } from '@/common/enums/role.enum';
 import type { JwtPayload } from '@/common/types/auth.types';
 
@@ -12,13 +11,8 @@ const getJwtSecret = (): string => {
   return secret;
 };
 
-const isGlobalRole = (role: unknown): role is GlobalRole =>
-  role === GlobalRole.SUPER_ADMIN || role === GlobalRole.NONE;
-
 const isPropertyRole = (role: unknown): role is PropertyRole =>
-  role === PropertyRole.SUPER_ADMIN ||
-  role === PropertyRole.PROPERTY_ADMIN ||
-  role === PropertyRole.PROPERTY_STAFF;
+  role === PropertyRole.SUPER_ADMIN || role === PropertyRole.PROPERTY_ADMIN;
 
 export const authenticateJWT = (
   req: Request,
@@ -33,11 +27,13 @@ export const authenticateJWT = (
   const token = authHeader.slice('Bearer '.length).trim();
   try {
     const decoded = jwt.verify(token, getJwtSecret()) as JwtPayload;
-    if (!decoded?.sub || !decoded?.email || !decoded?.globalRole) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    if (!isGlobalRole(decoded.globalRole) || !Array.isArray(decoded.roles)) {
+    if (
+      !decoded?.sub ||
+      !decoded?.email ||
+      !isPropertyRole(decoded.role) ||
+      !Array.isArray(decoded.permissions) ||
+      !Array.isArray(decoded.roles)
+    ) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 

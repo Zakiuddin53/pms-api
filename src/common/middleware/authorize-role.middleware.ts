@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { GlobalRole } from '@/common/enums/role.enum';
 import { PropertyRole } from '@/common/enums/role.enum';
 
 export const authorizeRole =
@@ -9,7 +8,7 @@ export const authorizeRole =
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    if (req.user.globalRole === GlobalRole.SUPER_ADMIN) {
+    if (req.user.role === PropertyRole.SUPER_ADMIN) {
       return next();
     }
 

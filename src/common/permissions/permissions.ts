@@ -4,9 +4,8 @@ export const Permissions = {
   PROPERTIES_CREATE: 'properties:create',
   PROPERTIES_LIST: 'properties:list',
   PROPERTIES_UPDATE: 'properties:update',
-  PROPERTY_ADMINS_CREATE: 'properties:admins:create',
-  PROPERTY_STAFF_CREATE: 'properties:staff:create',
   PROPERTY_USERS_READ: 'properties:users:read',
+  PROPERTY_USERS_UPDATE: 'properties:users:update',
   ROOM_TYPES_CREATE: 'room-types:create',
   ROOM_TYPES_READ: 'room-types:read',
   ROOM_TYPES_UPDATE: 'room-types:update',
@@ -30,88 +29,32 @@ export const Permissions = {
   BOOKINGS_CANCEL: 'bookings:cancel',
   BOOKINGS_CHECKIN: 'bookings:checkin',
   BOOKINGS_CHECKOUT: 'bookings:checkout',
+  PAYMENTS_READ: 'payments:read',
   PAYMENTS_CREATE: 'payments:create',
   PAYMENTS_REFUND: 'payments:refund',
+  LEADS_READ: 'leads:read',
+  BOOKINGS_CREATE: 'bookings:create',
+  BOOKINGS_UPDATE: 'bookings:update',
+  STAY_EARLY_CHECKOUT: 'stays:early-checkout',
+  STAY_ROOM_CHANGE: 'stays:room-change',
 } as const;
 
 export type Permission = (typeof Permissions)[keyof typeof Permissions];
+export const ALL_PERMISSIONS: Permission[] = Object.values(Permissions);
 
-export const RolePermissions: Record<PropertyRole, Permission[]> = {
-  [PropertyRole.SUPER_ADMIN]: [
-    Permissions.PROPERTIES_CREATE,
-    Permissions.PROPERTIES_LIST,
-    Permissions.PROPERTIES_UPDATE,
-    Permissions.PROPERTY_ADMINS_CREATE,
-    Permissions.PROPERTY_STAFF_CREATE,
-    Permissions.PROPERTY_USERS_READ,
-    Permissions.ROOM_TYPES_CREATE,
-    Permissions.ROOM_TYPES_READ,
-    Permissions.ROOM_TYPES_UPDATE,
-    Permissions.ROOM_TYPES_DELETE,
-    Permissions.ROOMS_CREATE,
-    Permissions.ROOMS_READ,
-    Permissions.ROOMS_UPDATE,
-    Permissions.ROOMS_DELETE,
-    Permissions.ROOM_BLOCKS_CREATE,
-    Permissions.ROOM_BLOCKS_READ,
-    Permissions.ROOM_BLOCKS_UPDATE,
-    Permissions.ROOM_BLOCKS_DELETE,
-    Permissions.RATES_CREATE,
-    Permissions.RATES_READ,
-    Permissions.RATES_UPDATE,
-    Permissions.RATES_DELETE,
-    Permissions.AVAILABILITY_READ,
-    Permissions.BOOKINGS_HOLD,
-    Permissions.BOOKINGS_CONFIRM,
-    Permissions.BOOKINGS_READ,
-    Permissions.BOOKINGS_CANCEL,
-    Permissions.BOOKINGS_CHECKIN,
-    Permissions.BOOKINGS_CHECKOUT,
-    Permissions.PAYMENTS_CREATE,
-    Permissions.PAYMENTS_REFUND,
-  ],
-  [PropertyRole.PROPERTY_ADMIN]: [
-    Permissions.PROPERTIES_CREATE,
-    Permissions.PROPERTIES_LIST,
-    Permissions.PROPERTIES_UPDATE,
-    Permissions.PROPERTY_STAFF_CREATE,
-    Permissions.PROPERTY_USERS_READ,
-    Permissions.ROOM_TYPES_CREATE,
-    Permissions.ROOM_TYPES_READ,
-    Permissions.ROOM_TYPES_UPDATE,
-    Permissions.ROOM_TYPES_DELETE,
-    Permissions.ROOMS_CREATE,
-    Permissions.ROOMS_READ,
-    Permissions.ROOMS_UPDATE,
-    Permissions.ROOMS_DELETE,
-    Permissions.ROOM_BLOCKS_CREATE,
-    Permissions.ROOM_BLOCKS_READ,
-    Permissions.ROOM_BLOCKS_UPDATE,
-    Permissions.ROOM_BLOCKS_DELETE,
-    Permissions.RATES_CREATE,
-    Permissions.RATES_READ,
-    Permissions.RATES_UPDATE,
-    Permissions.RATES_DELETE,
-    Permissions.AVAILABILITY_READ,
-    Permissions.BOOKINGS_HOLD,
-    Permissions.BOOKINGS_CONFIRM,
-    Permissions.BOOKINGS_READ,
-    Permissions.BOOKINGS_CANCEL,
-    Permissions.BOOKINGS_CHECKIN,
-    Permissions.BOOKINGS_CHECKOUT,
-    Permissions.PAYMENTS_CREATE,
-    Permissions.PAYMENTS_REFUND,
-  ],
-  [PropertyRole.PROPERTY_STAFF]: [
-    Permissions.ROOM_TYPES_READ,
-    Permissions.ROOMS_READ,
-    Permissions.ROOM_BLOCKS_READ,
-    Permissions.RATES_READ,
-    Permissions.AVAILABILITY_READ,
-    Permissions.BOOKINGS_HOLD,
-    Permissions.BOOKINGS_READ,
-    Permissions.BOOKINGS_CHECKIN,
-    Permissions.BOOKINGS_CHECKOUT,
-    Permissions.PAYMENTS_CREATE,
-  ],
-};
+/**
+ * Resolves the effective permissions for a user based on their role.
+ *
+ * - SUPER_ADMIN   → ALL_PERMISSIONS (stored `customPermissions` is ignored)
+ * - PROPERTY_ADMIN → uses the custom permission set stored on `User.permissions`
+ *                    (empty array = no access until Super Admin grants something)
+ */
+export function resolvePermissions(
+  role: PropertyRole,
+  customPermissions: Permission[] | null,
+): Permission[] {
+  if (role === PropertyRole.SUPER_ADMIN) {
+    return ALL_PERMISSIONS;
+  }
+  return customPermissions ?? [];
+}

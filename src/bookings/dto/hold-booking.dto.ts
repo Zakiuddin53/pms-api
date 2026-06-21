@@ -11,6 +11,7 @@ import {
   IsString,
   Min,
   ValidateNested,
+  IsBoolean,
 } from 'class-validator';
 
 export class HoldGuestDto {
@@ -63,6 +64,16 @@ export class HoldBookingDto {
   @IsOptional()
   @ApiPropertyOptional({ enum: BookingSource, default: BookingSource.ONLINE })
   source?: BookingSource;
+
+  @IsBoolean()
+  @IsOptional()
+  @ApiPropertyOptional({ example: true, description: 'If true, booking skips HOLD status and goes directly to CONFIRMED without online payment' })
+  isPayAtProperty?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({ example: 'Early check-in requested' })
+  notes?: string;
 
   @ValidateNested()
   @Type(() => HoldGuestDto)

@@ -1,5 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn, Column } from "typeorm";
-import { Property } from "./property.entity";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  OneToOne,
+  JoinColumn,
+  Column,
+} from 'typeorm';
+import { Property } from './property.entity';
 
 @Entity()
 export class PropertyAbout {
@@ -17,8 +23,8 @@ export class PropertyAbout {
   description?: string;
 
   @Column({ nullable: true })
-  checkInTime?: string; 
+  checkInTime?: string;
 
   @Column({ nullable: true })
-  checkOutTime?: string; 
+  checkOutTime?: string;
 }

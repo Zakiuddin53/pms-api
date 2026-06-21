@@ -4,7 +4,6 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
-import { GlobalRole } from '@/common/enums/role.enum';
 import { PropertyRole } from '@/common/enums/role.enum';
 
 @Injectable()
@@ -16,7 +15,8 @@ export class PropertyRoleGuard implements CanActivate {
       throw new ForbiddenException('Forbidden');
     }
 
-    if (user.globalRole === GlobalRole.SUPER_ADMIN) {
+    // Super admin has access to all properties
+    if (user.role === PropertyRole.SUPER_ADMIN) {
       return true;
     }
 

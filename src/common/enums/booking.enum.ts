@@ -1,12 +1,13 @@
 export enum BookingSource {
   ONLINE = 'ONLINE',
   WALKIN = 'WALKIN',
-  PHONE = 'PHONE',
   OTA = 'OTA',
+  RESERVATION = 'RESERVATION',
 }
 
 export enum BookingStatus {
   HOLD = 'HOLD',
+  RESERVED = 'RESERVED',
   CONFIRMED = 'CONFIRMED',
   CANCELLED = 'CANCELLED',
   CHECKED_IN = 'CHECKED_IN',

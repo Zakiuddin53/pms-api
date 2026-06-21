@@ -25,6 +25,9 @@ export class Property {
   @Column()
   name: string;
 
+  @Column({ unique: true, nullable: true })
+  slug?: string;
+
   @Column()
   address: string;
 
@@ -39,6 +42,9 @@ export class Property {
 
   @Column({ nullable: true })
   state?: string;
+
+  @Column({ type: 'int', default: 0 })
+  totalRooms: number;
 
   @Column({ nullable: true, type: 'json' })
   imageUrls: string[];
@@ -77,4 +83,13 @@ export class Property {
 
   @OneToMany(() => PropertyPolicy, (p) => p.Property)
   Policies: PropertyPolicy[];
+  /**
+   * Virtual field for landing pages: Starting price of the property.
+   * Based on the lowest defaultPrice of all its RoomTypes.
+   */
+  get startingPrice(): number {
+    if (!this.RoomTypes || this.RoomTypes.length === 0) return 0;
+    const prices = this.RoomTypes.map((rt) => Number(rt.defaultPrice || 0));
+    return Math.min(...prices);
+  }
 }

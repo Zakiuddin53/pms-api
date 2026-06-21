@@ -22,9 +22,6 @@ export class BookingItemRoom {
   @JoinColumn()
   BookingItem: BookingItem;
 
-  @Column({ nullable: true })
-  roomId?: number;
-
   @ManyToOne(() => Room, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn()
   Room?: Room;

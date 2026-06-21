@@ -24,5 +24,5 @@ export class BookingItemNight {
   date: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  pricePerRoom: number; // rate for this night, per single room
+  pricePerRoom: number;
 }
